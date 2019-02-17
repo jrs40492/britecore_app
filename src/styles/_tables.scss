@@ -1,0 +1,20 @@
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+
+  td,
+  th {
+    border: 1px solid $border;
+    padding: 2px 0 2px 4px;
+  }
+
+  thead {
+    background-color: $primary-color;
+    color: white;
+    height: 30px;
+
+    tr {
+      height: 30px;
+    }
+  }
+}
