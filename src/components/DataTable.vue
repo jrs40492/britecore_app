@@ -99,10 +99,20 @@
           <tr :colspan="data.columns.length">There are no records to display!</tr>
         </tbody>
       </table>
-      <div class="pagination" v-if="pagination.totalPages > 0">
-        <div :class="pagination.currentPage === 1 ? 'active' : ''">1</div>
-        <div>{{ pagination.page }}</div>
-        <div>{{ pagination.totalPages }}</div>
+      <div class="pagination" v-if="pagination.totalPages !== 1">
+        <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="navigate(1)">1</div>
+        <div v-if="pagination.startEllipsis" class="ellipsis">...</div>
+        <div
+          v-for="page in pagination.range"
+          :key="page"
+          :class="pagination.currentPage === page ? 'active' : ''"
+          @click="navigate(page)"
+        >{{ page }}</div>
+        <div v-if="pagination.endEllipsis" class="ellipsis">...</div>
+        <div
+          :class="pagination.currentPage === pagination.totalPages ? 'active' : ''"
+          @click="navigate(pagination.totalPages)"
+        >{{ pagination.totalPages }}</div>
       </div>
     </div>
   </div>
@@ -126,22 +136,56 @@ export default Vue.extend({
       pagination: {
         limit: 10,
         currentPage: 1,
-        totalPages: 0
+        totalPages: 0,
+        start: 2,
+        end: 0,
+        startEllipsis: false,
+        endEllipsis: false,
+        range: _.range(1, 1)
       }
     };
   },
   mounted() {
     if (this.data && this.data.records) {
+      this.allRecords = this.filteredRecords = this.data.records;
+
       this.updatePagination();
-      this.getData();
     }
   },
   methods: {
     updatePagination() {
-      this.allRecords = this.filteredRecords = this.data.records;
+      this.pagination.startEllipsis = false;
+      this.pagination.endEllipsis = false;
+
       this.pagination.limit = 10;
-      this.pagination.totalPages =
-        this.filteredRecords.length / this.pagination.limit;
+      this.pagination.totalPages = Math.ceil(
+        this.filteredRecords.length / this.pagination.limit
+      );
+      this.pagination.end = this.pagination.totalPages;
+
+      if (this.pagination.currentPage - 2 > 2) {
+        this.pagination.start = this.pagination.currentPage - 2;
+        this.pagination.startEllipsis = true;
+      }
+
+      if (this.pagination.currentPage + 2 < this.pagination.totalPages) {
+        this.pagination.end = this.pagination.currentPage + 3;
+      }
+
+      if (this.pagination.end !== this.pagination.totalPages) {
+        this.pagination.endEllipsis = true;
+      }
+
+      this.pagination.range = _.range(
+        this.pagination.start,
+        this.pagination.end
+      );
+
+      this.getData();
+    },
+    navigate(page: number) {
+      this.pagination.currentPage = page;
+      this.updatePagination();
     },
     upsertFilter(id: any, type: string, params: any) {
       // Check if the filter already exists
@@ -165,8 +209,14 @@ export default Vue.extend({
       // Reset filtered records back to entire list
       this.filteredRecords = this.allRecords;
 
-      // Loop through all active filters to get data set
       const filterKeys = Object.keys(this.activeFilters);
+
+      if (filterKeys.length === 0) {
+        this.navigate(1);
+        return;
+      }
+
+      // Loop through all active filters to get data set
       filterKeys.forEach(key => {
         const filter = this.activeFilters[key];
         switch (filter.type) {
@@ -210,7 +260,7 @@ export default Vue.extend({
           return new Date(x[columnId]).setHours(0, 0, 0, 0) <= filterDate;
         }
       });
-      this.getData();
+      this.navigate(1);
     },
     textFilter(value: any, columnId: string, isNew: boolean) {
       if (isNew) {
@@ -222,7 +272,7 @@ export default Vue.extend({
       this.filteredRecords = this.filteredRecords.filter((x: any) =>
         new RegExp(value, "i").test(x[columnId])
       );
-      this.getData();
+      this.navigate(1);
     },
     numberFilter(
       value: string,
@@ -245,7 +295,7 @@ export default Vue.extend({
           return x[columnId] <= numValue;
         }
       });
-      this.getData();
+      this.navigate(1);
     },
     sort(column: any) {
       column.sort_direction = column.sort_direction === "asc" ? "desc" : "asc";

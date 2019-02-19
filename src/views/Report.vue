@@ -8,7 +8,7 @@
 <script lang="ts">
 import Vue from "vue";
 import DataTable from "@/components/DataTable.vue";
-import payments from "@/payments.js";
+import payments from "@/payments.ts";
 
 export default Vue.extend({
   name: "report",
