@@ -6,11 +6,11 @@
         Upload
       </router-link>
     </div>
-    <DataTable :data="data"></DataTable>
+    <DataTable v-bind:data="data"></DataTable>
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import Vue from "vue";
 import DataTable from "@/components/DataTable.vue";
 
@@ -19,30 +19,38 @@ export default Vue.extend({
   components: {
     DataTable
   },
+  mounted() {
+    this.getReports();
+  },
   data() {
     return {
       data: {
-        uniqueColumn: "ID",
-        records: [
-          {
-            ID: "1",
-            name: "Test Report",
-            uploadDate: new Date().toLocaleString()
-          }
-        ],
+        uniqueColumn: "id",
+        records: [],
         columns: [
           {
-            id: "ID",
-            title: "ID",
-            visible: false
+            id: "id",
+            data: {
+              id: "id",
+              name: "ID",
+              visible: false
+            }
           },
           {
             id: "name",
-            title: "Report"
+            data: {
+              id: "name",
+              name: "Report",
+              type: "link"
+            }
           },
           {
-            id: "uploadDate",
-            title: "Uploaded"
+            id: "createdOn",
+            data: {
+              id: "createdOn",
+              name: "Created",
+              type: "date"
+            }
           }
         ],
         options: {
@@ -51,16 +59,35 @@ export default Vue.extend({
         }
       }
     };
+  },
+  methods: {
+    getReports() {
+      this.$store.state.db
+        .collection("reports")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.data.records.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+        });
+    }
   }
 });
 </script>
 
 <style lang="scss">
+@import "@/styles/global.scss";
+
 a.icon-link {
   align-self: center;
   padding: 10px;
   color: white;
-  background-color: rgb(14, 14, 250);
+  background-color: $primary-color;
   border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
 }
 </style>

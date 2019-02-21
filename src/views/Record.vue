@@ -5,7 +5,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import Vue from "vue";
 
 export default Vue.extend({
@@ -13,13 +13,10 @@ export default Vue.extend({
   props: {
     record: Object
   },
-  mounted() {
-    console.log(1, this.record);
-  }
+  mounted() {}
 });
 </script>
 
 <style lang="scss">
 @import "@/styles/global.scss";
-
 </style>

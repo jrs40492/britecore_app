@@ -7,54 +7,54 @@
         v-for="(column, colIndex) in data.columns.filter(x => x.canFilter)"
         :key="colIndex"
       >
-        <div v-if="column.type === 'currency' || column.type === 'number'">
+        <div v-if="column.data.type === 'currency' || column.data.type === 'number'">
           <div class="number-input">
-            <label :for="column.id + 'Min'">Min {{ column.title }}:</label>
+            <label :for="column.data.id + 'Min'">Min {{ column.data.name }}:</label>
             <input
               type="number"
-              :id="column.id + 'Min'"
-              :v-model="column.id"
-              @input="numberFilter($event.target.value, column.id, 'min', true)"
+              :id="column.data.id + 'Min'"
+              :v-model="column.data.id"
+              @input="numberFilter($event.target.value, column.data.id, 'min', true)"
             >
           </div>
           <div class="number-input">
-            <label :for="column.id + 'Max'">Max {{ column.title }}:</label>
+            <label :for="column.data.id + 'Max'">Max {{ column.data.name }}:</label>
             <input
               type="number"
-              :id="column.id + 'Max'"
-              :v-model="column.id"
-              @input="numberFilter($event.target.value, column.id, 'max', true)"
+              :id="column.data.id + 'Max'"
+              :v-model="column.data.id"
+              @input="numberFilter($event.target.value, column.data.id, 'max', true)"
             >
           </div>
         </div>
-        <div v-else-if="column.type === 'date'">
+        <div v-else-if="column.data.type === 'date'">
           <div class="date-input">
-            <label :for="column.id + 'StartDate'">Start {{ column.title }}:</label>
+            <label :for="column.data.id + 'StartDate'">Start {{ column.data.name }}:</label>
             <input
               type="date"
-              :id="column.id + 'StartDate'"
+              :id="column.data.id + 'StartDate'"
               name="Start Date"
-              @input="dateFilter($event.target.value, column.id, 'start', true)"
-              :v-model="column.id"
+              @input="dateFilter($event.target.value, column.data.id, 'start', true)"
+              :v-model="column.data.id"
             >
           </div>
           <div class="date-input">
-            <label :for="column.id + 'EndDate'">End {{ column.title }}:</label>
+            <label :for="column.data.id + 'EndDate'">End {{ column.data.name }}:</label>
             <input
               type="date"
-              :id="column.id + 'EndDate'"
+              :id="column.data.id + 'EndDate'"
               name="End Date"
-              @input="dateFilter($event.target.value, column.id, 'end', true)"
-              :v-model="column.id"
+              @input="dateFilter($event.target.value, column.data.id, 'end', true)"
+              :v-model="column.data.id"
             >
           </div>
         </div>
         <div v-else>
           <input
             type="text"
-            :placeholder="'Filter by ' + column.title"
-            @input="textFilter($event.target.value, column.id, true)"
-            :v-model="column.id"
+            :placeholder="'Filter by ' + column.data.name"
+            @input="textFilter($event.target.value, column.data.id, true)"
+            :v-model="column.data.id"
           >
         </div>
       </div>
@@ -64,29 +64,34 @@
         <thead>
           <tr>
             <th
-              v-for="(column, colIndex) in data.columns.filter(x => x.visible !== false)"
+              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible !== false)"
               :key="colIndex"
               @click="sort(column)"
-            >{{ column.title }}</th>
+            >{{ column.data.name }}</th>
             <th v-if="data.options.canEdit">Edit</th>
             <th v-if="data.options.canDelete">Delete</th>
           </tr>
         </thead>
         <tbody v-if="records">
-          <tr v-for="row in records" :key="row[data.uniqueColumn]">
+          <tr v-for="record in records" :key="record.id">
             <td
-              v-for="(column, colIndex) in data.columns.filter(x => x.visible !== false)"
+              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible !== false)"
               :key="colIndex"
             >
-              <span v-if="column.type === 'date'">{{ new Date(row[column.id]).toLocaleString() }}</span>
+              <span v-if="column.data.type === 'date'">{{ formatDate(record.data[column.data.id]) }}</span>
+              <router-link
+                :to="record.id"
+                v-else-if="column.data.type ==='link'"
+                append
+              >{{ record.data[column.data.id] }}</router-link>
               <span
-                v-else-if="column.type === 'currency'"
-                :class="row[column.id] < 0 ? 'negative' : ''"
-              >{{ formatCurrency(row[column.id]) }}</span>
-              <span v-else>{{ row[column.id] }}</span>
+                v-else-if="column.data.type === 'currency'"
+                :class="record.data[column.data.id] < 0 ? 'negative' : ''"
+              >{{ formatCurrency(record.data[column.data.id]) }}</span>
+              <span v-else>{{ record.data[column.data.id] }}</span>
             </td>
             <td v-if="data.options.canEdit && data.uniqueColumn" class="icon-cell">
-              <router-link :to="row[data.uniqueColumn]" append :record="row">
+              <router-link :to="record.data[data.uniqueColumn]" append :record="record">
                 <i class="material-icons">edit</i>
               </router-link>
             </td>
@@ -96,10 +101,10 @@
           </tr>
         </tbody>
         <tbody v-else>
-          <tr :colspan="data.columns.length">There are no records to display!</tr>
+          <tr :colspan="records.length">There are no records to display!</tr>
         </tbody>
       </table>
-      <div class="pagination" v-if="pagination.totalPages !== 1">
+      <div class="pagination" v-if="pagination.totalPages > 1">
         <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="navigate(1)">1</div>
         <div v-if="pagination.startEllipsis" class="ellipsis">...</div>
         <div
@@ -118,27 +123,23 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import _ from "lodash";
 import Vue from "vue";
 
 export default Vue.extend({
   name: "DataTable",
-  props: {
-    data: Object
-  },
+  props: ["data"],
   data() {
     return {
       allRecords: [],
       filteredRecords: [],
       records: [],
-      activeFilters: {} as any,
+      activeFilters: {},
       pagination: {
         limit: 10,
         currentPage: 1,
         totalPages: 0,
-        start: 2,
-        end: 0,
         startEllipsis: false,
         endEllipsis: false,
         range: _.range(1, 1)
@@ -146,14 +147,26 @@ export default Vue.extend({
     };
   },
   mounted() {
-    if (this.data && this.data.records) {
-      this.allRecords = this.filteredRecords = this.data.records;
-
-      this.updatePagination();
+    this.setData();
+  },
+  watch: {
+    "data.records": function(val) {
+      this.setData(val);
     }
   },
   methods: {
+    setData(data) {
+      console.log(this.data);
+      if ((this.data && this.data.records) || data) {
+        this.allRecords = this.filteredRecords = data || this.data.records;
+
+        this.updatePagination();
+      }
+    },
     updatePagination() {
+      let start = 2;
+      let end = this.pagination.totalPages;
+
       this.pagination.startEllipsis = false;
       this.pagination.endEllipsis = false;
 
@@ -161,33 +174,29 @@ export default Vue.extend({
       this.pagination.totalPages = Math.ceil(
         this.filteredRecords.length / this.pagination.limit
       );
-      this.pagination.end = this.pagination.totalPages;
 
       if (this.pagination.currentPage - 2 > 2) {
-        this.pagination.start = this.pagination.currentPage - 2;
+        start = this.pagination.currentPage - 2;
         this.pagination.startEllipsis = true;
       }
 
       if (this.pagination.currentPage + 2 < this.pagination.totalPages) {
-        this.pagination.end = this.pagination.currentPage + 3;
+        end = this.pagination.currentPage + 3;
       }
 
-      if (this.pagination.end !== this.pagination.totalPages) {
+      if (end !== this.pagination.totalPages) {
         this.pagination.endEllipsis = true;
       }
 
-      this.pagination.range = _.range(
-        this.pagination.start,
-        this.pagination.end
-      );
+      this.pagination.range = _.range(start, end);
 
       this.getData();
     },
-    navigate(page: number) {
+    navigate(page) {
       this.pagination.currentPage = page;
       this.updatePagination();
     },
-    upsertFilter(id: any, type: string, params: any) {
+    upsertFilter(id, type, params) {
       // Check if the filter already exists
       if (_.find(this.activeFilters, { id })) {
         if (!params.value) {
@@ -211,6 +220,7 @@ export default Vue.extend({
 
       const filterKeys = Object.keys(this.activeFilters);
 
+      // If all filters have been removed, reset page to 1
       if (filterKeys.length === 0) {
         this.navigate(1);
         return;
@@ -244,8 +254,7 @@ export default Vue.extend({
         }
       });
     },
-    clearFilter() {},
-    dateFilter(value: string, columnId: string, type: string, isNew: boolean) {
+    dateFilter(value, columnId, type, isNew) {
       if (isNew) {
         // Only upsert filter if it came from user input, not a method
         this.upsertFilter(columnId + type, "date", { value, columnId, type });
@@ -253,7 +262,7 @@ export default Vue.extend({
       }
 
       const filterDate = new Date(value).setHours(0, 0, 0, 0);
-      this.filteredRecords = this.filteredRecords.filter((x: any) => {
+      this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === "start") {
           return new Date(x[columnId]).setHours(0, 0, 0, 0) >= filterDate;
         } else {
@@ -262,24 +271,19 @@ export default Vue.extend({
       });
       this.navigate(1);
     },
-    textFilter(value: any, columnId: string, isNew: boolean) {
+    textFilter(value, columnId, isNew) {
       if (isNew) {
         // Only upsert filter if it came from user input, not a method
         this.upsertFilter(columnId, "text", { value, columnId });
         return;
       }
 
-      this.filteredRecords = this.filteredRecords.filter((x: any) =>
+      this.filteredRecords = this.filteredRecords.filter(x =>
         new RegExp(value, "i").test(x[columnId])
       );
       this.navigate(1);
     },
-    numberFilter(
-      value: string,
-      columnId: string,
-      type: string,
-      isNew: boolean
-    ) {
+    numberFilter(value, columnId, type, isNew) {
       if (isNew) {
         // Only upsert filter if it came from user input, not a method
         this.upsertFilter(columnId + type, "number", { value, columnId, type });
@@ -288,7 +292,7 @@ export default Vue.extend({
 
       const numValue = parseFloat(value);
 
-      this.filteredRecords = this.filteredRecords.filter((x: any) => {
+      this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === "min") {
           return x[columnId] >= numValue;
         } else {
@@ -297,16 +301,16 @@ export default Vue.extend({
       });
       this.navigate(1);
     },
-    sort(column: any) {
-      column.sort_direction = column.sort_direction === "asc" ? "desc" : "asc";
+    sort(column) {
+      column.data.sort_direction =
+        column.data.sort_direction === "asc" ? "desc" : "asc";
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
-        column.id,
-        column.sort_direction
+        column.data.id,
+        column.data.sort_direction
       );
       this.getData();
     },
-    changePage() {},
     getData() {
       const start = (this.pagination.currentPage - 1) * this.pagination.limit;
       const end =
@@ -314,7 +318,7 @@ export default Vue.extend({
         this.pagination.limit;
       this.records = this.filteredRecords.slice(start, end || -1);
     },
-    formatCurrency(number: number) {
+    formatCurrency(number) {
       const formatter = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
@@ -322,6 +326,12 @@ export default Vue.extend({
       });
 
       return formatter.format(number);
+    },
+    formatDate(date) {
+      if (typeof date === "string") {
+        return new Date(date).toLocaleString();
+      }
+      return date.toDate().toLocaleString();
     }
   }
 });

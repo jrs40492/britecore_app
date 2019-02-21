@@ -28,14 +28,52 @@
           <label for="reportTitle">Report Title</label>
           <input type="text" name="reportTitle" id="reportTitle">
         </div>
-        <ColumnOption v-for="(column, colIndex) in columns" :key="colIndex" :field="column"></ColumnOption>
+        <div class="text-input">
+          <label for="uniqueColumn">Unique Column:</label>
+          <select name="uniqueColumn" id="uniqueColumn">
+            <option
+              v-for="(column, colIndex) in columns"
+              :key="colIndex"
+              :value="column"
+            >{{ column }}</option>
+          </select>
+        </div>
+        <div class="checkbox-input">
+          <label :for="field + 'Editable'">Data Editable?</label>
+          <input
+            type="checkbox"
+            name="editable"
+            :id="field + 'Editable'"
+            data-field="canEdit"
+            data-type="bool"
+            checked
+          >
+        </div>
+        <div class="checkbox-input">
+          <label :for="field + 'Editable'">Data Deletable?</label>
+          <input
+            type="checkbox"
+            name="deletable"
+            :id="field + 'Deletable'"
+            data-field="canDelete"
+            data-type="bool"
+          >
+        </div>
+        <ColumnOption
+          v-for="(column, index) in columns"
+          :key="index"
+          :field="column"
+          :index="index"
+        ></ColumnOption>
         <input type="submit" value="Upload">
       </form>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script>
+import _ from "lodash";
+import uuidv4 from "uuid/v4";
 import Vue from "vue";
 import firebase from "firebase";
 import papa from "papaparse";
@@ -48,13 +86,13 @@ export default Vue.extend({
   },
   data() {
     return {
-      columns: [] as string[],
-      fileResults: {} as papa.ParseResult,
-      batchedSettings: [] as any
+      columns: [],
+      fileResults: {},
+      batchedSettings: []
     };
   },
   methods: {
-    checkFile(event: any) {
+    checkFile(event) {
       const file = event.target.files[0];
 
       papa.parse(file, {
@@ -76,20 +114,32 @@ export default Vue.extend({
         }
       });
     },
-    processReportSettings(event: any) {
+    processReportSettings(event) {
       const elements = event.target.elements;
       const fileData = this.fileResults.data;
 
       // Get the report title out of the elements
       const reportTitle = elements.namedItem("reportTitle").value;
+      const uniqueColumn = elements.namedItem("uniqueColumn").value;
 
       if (!reportTitle) {
         return;
       }
 
       const db = this.$store.state.db;
-      const reportsRef = db.collection("reports").doc(reportTitle);
+      const reportsRef = db.collection("reports").doc();
       const batch = db.batch();
+
+      const reportInfo = {
+        id: uuidv4(),
+        name: reportTitle,
+        createdOn: firebase.firestore.Timestamp.now(),
+        settings: {
+          uniqueColumn
+        }
+      };
+
+      batch.set(reportsRef, reportInfo);
 
       fileData.forEach(record => {
         let recordRef = reportsRef.collection("records").doc();
@@ -97,23 +147,45 @@ export default Vue.extend({
       });
 
       Promise.all([...elements].map(this.processColumnSetting))
-        .then(results => {
-          //batch.commit();
-        })
-        .then((results: any) => {
-          console.log(2, results);
-          for (let result of results) {
-            // results.forEach((result: any, index: number) => {
-            console.log(3, result);
-            // let columnRef = reportsRef.collection("records").doc(key);
-          }
+        .then(columnSettings => {
+          const promises = new Promise((resolve, reject) => {
+            const columns = [];
+            const count = columnSettings.length;
+
+            columnSettings.forEach((setting, index) => {
+              if (setting) {
+                if (!columns[setting.field]) {
+                  columns[setting.field] = {};
+                }
+
+                columns[setting.field][setting.type] = setting.value;
+              }
+
+              if (index === count - 1) resolve(columns);
+            });
+          });
+
+          promises
+            .then(columns => {
+              for (const key in columns) {
+                const settings = columns[key];
+                settings.id = key;
+                settings.name = key;
+                let columnRef = reportsRef.collection("columns").doc();
+                batch.set(columnRef, settings);
+              }
+              return;
+            })
+            .then(() => {
+              batch.commit();
+            });
         })
         .catch(err => {
           // TODO: Properly handle errors
           console.log(err);
         });
     },
-    processColumnSetting(element: any) {
+    processColumnSetting(element) {
       return new Promise((resolve, reject) => {
         const field = element.getAttribute("data-field");
 
@@ -125,13 +197,14 @@ export default Vue.extend({
 
         const settings = {
           field,
-          name: element.name,
+          type: element.name,
           value: element.value
         };
 
         resolve(settings);
       });
-    }
+    },
+    processSetting(setting) {}
   }
 });
 </script>
