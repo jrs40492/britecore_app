@@ -1,11 +1,6 @@
 <template>
-  <div id="reports">
-    <div class="reports-nav">
-      <router-link to="upload" class="icon-link" append>
-        <i class="material-icons">cloud_upload</i>
-        Upload
-      </router-link>
-    </div>
+  <div id="reports" class="grid grid-cell span-12-xs">
+    <ActionBar :actions="actions"></ActionBar>
     <DataTable v-bind:data="data"></DataTable>
   </div>
 </template>
@@ -13,11 +8,13 @@
 <script>
 import Vue from "vue";
 import DataTable from "@/components/DataTable.vue";
+import ActionBar from "@/components/ActionBar.vue";
 
 export default Vue.extend({
   name: "Reports",
   components: {
-    DataTable
+    DataTable,
+    ActionBar
   },
   mounted() {
     this.getReports();
@@ -41,7 +38,8 @@ export default Vue.extend({
               id: "name",
               name: "Report",
               type: "link",
-              visible: true
+              visible: true,
+              canFilter: true
             }
           },
           {
@@ -50,7 +48,8 @@ export default Vue.extend({
               id: "createdOn",
               name: "Created",
               type: "date",
-              visible: true
+              visible: true,
+              canFilter: true
             }
           }
         ],
@@ -58,7 +57,17 @@ export default Vue.extend({
           canEdit: true,
           canDelete: true
         }
-      }
+      },
+      actions: [
+        {
+          type: "link",
+          link: "upload",
+          append: true,
+          icon: "cloud_upload",
+          text: "Upload",
+          align: "right"
+        }
+      ]
     };
   },
   methods: {

@@ -1,0 +1,53 @@
+$columns: 12;
+$margin: .4%;
+$max-order: 10;
+
+.hidden {
+  display: none;
+}
+
+.grid {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: stretch;
+  max-width: 100%;
+
+  .grid-cell {
+    margin: 5px $margin;
+    align-self: flex-start;
+
+    @each $key,
+    $value in $breakpoints {
+      @for $i from 1 through $columns {
+        &.span-#{$i}-#{$key} {
+          @include break-min($key) {
+            flex: 0 0 #{($i / $columns * 100%) - ($margin * 2)};
+          }
+        }
+      }
+
+      @for $i from 1 through $max-order {
+        @include break-max($key) {
+          &.order-#{$i}-#{$key} {
+            order: $i;
+          }
+        }
+      }
+    }
+  }
+}
+
+@each $key,
+$value in $breakpoints {
+  .hidden-max-#{$key} {
+    @include break-max($key) {
+      display: none;
+    }
+  }
+
+  .hidden-min-#{$key} {
+    @include break-min($key) {
+      display: none;
+    }
+  }
+}

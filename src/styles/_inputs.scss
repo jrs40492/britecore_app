@@ -1,7 +1,9 @@
-.text-input {
+.text-input,
+.date-input,
+.number-input {
   display: flex;
   flex-wrap: wrap;
-  padding: 5px 0;
+  padding: 0 0 10px 0;
 
   label {
     flex: 1 0 100%;
@@ -15,6 +17,9 @@
   }
 }
 
-input[type=submit] {
-  padding: 5px;
+.checkbox-input {
+  label {
+    font-weight: bold;
+    padding: 0 5px 0 0;
+  }
 }

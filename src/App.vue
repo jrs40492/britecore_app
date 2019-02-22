@@ -4,7 +4,7 @@
       <router-link to="/">Home</router-link>
       <router-link to="/reports">Reports</router-link>
     </div>
-    <router-view class="page-wrapper"/>
+    <router-view class="grid"/>
   </div>
 </template>
 
@@ -38,9 +38,5 @@
       color: $secondary-font;
     }
   }
-}
-
-.page-wrapper {
-  padding: 15px;
 }
 </style>

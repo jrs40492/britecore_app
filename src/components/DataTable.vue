@@ -1,71 +1,74 @@
 <template>
-  <div class="data-table-page">
-    <div class="filters">
-      <h2>Filters</h2>
-      <div
-        class="filter"
-        v-for="(column, colIndex) in data.columns.filter(x => x.data.canFilter && x.data.visible)"
-        :key="colIndex"
-      >
-        <div v-if="column.data.type === 'currency' || column.data.type === 'number'">
-          <div class="text-input">
-            <label :for="column.data.id + 'Min'">Min {{ column.data.name }}:</label>
-            <input
-              type="number"
-              placeholder="0"
-              :id="column.data.id + 'Min'"
-              :v-model="column.data.id"
-              @input="applyFilter('number', $event.target.value, column.data.id, 'min')"
-            >
+  <div class="data-table-page grid grid-cell span-12-xs">
+    <div class="card grid-cell span-12-xs span-3-lg">
+      <div class="card-header">Filters</div>
+      <div class="card-body">
+        <div
+          class="filter"
+          v-for="(column, colIndex) in data.columns.filter(x => x.data.canFilter && x.data.visible)"
+          :key="colIndex"
+        >
+          <div v-if="column.data.type === 'currency' || column.data.type === 'number'">
+            <div class="number-input">
+              <label :for="column.data.id + 'Min'">Min {{ column.data.name }}:</label>
+              <input
+                type="number"
+                placeholder="0"
+                :id="column.data.id + 'Min'"
+                :v-model="column.data.id"
+                @input="applyFilter('number', $event.target.value, column.data.id, 'min')"
+              >
+            </div>
+            <div class="number-input">
+              <label :for="column.data.id + 'Max'">Max {{ column.data.name }}:</label>
+              <input
+                type="number"
+                placeholder="1000"
+                :id="column.data.id + 'Max'"
+                :v-model="column.data.id"
+                @input="applyFilter('number', $event.target.value, column.data.id, 'max')"
+              >
+            </div>
           </div>
-          <div class="text-input">
-            <label :for="column.data.id + 'Max'">Max {{ column.data.name }}:</label>
-            <input
-              type="number"
-              placeholder="1000"
-              :id="column.data.id + 'Max'"
-              :v-model="column.data.id"
-              @input="applyFilter('number', $event.target.value, column.data.id, 'max')"
-            >
+          <div v-else-if="column.data.type === 'date'">
+            <div class="date-input">
+              <label :for="column.data.id + 'StartDate'">Start {{ column.data.name }}:</label>
+              <input
+                type="date"
+                :id="column.data.id + 'StartDate'"
+                name="Start Date"
+                @input="applyFilter('date', $event.target.value, column.data.id, 'start')"
+                :v-model="column.data.id"
+              >
+            </div>
+            <div class="date-input">
+              <label :for="column.data.id + 'EndDate'">End {{ column.data.name }}:</label>
+              <input
+                type="date"
+                :id="column.data.id + 'EndDate'"
+                name="End Date"
+                @input="applyFilter('date', $event.target.value, column.data.id, 'end')"
+                :v-model="column.data.id"
+              >
+            </div>
           </div>
-        </div>
-        <div v-else-if="column.data.type === 'date'">
-          <div class="text-input">
-            <label :for="column.data.id + 'StartDate'">Start {{ column.data.name }}:</label>
-            <input
-              type="date"
-              :id="column.data.id + 'StartDate'"
-              name="Start Date"
-              @input="applyFilter('date', $event.target.value, column.data.id, 'start')"
-              :v-model="column.data.id"
-            >
-          </div>
-          <div class="text-input">
-            <label :for="column.data.id + 'EndDate'">End {{ column.data.name }}:</label>
-            <input
-              type="date"
-              :id="column.data.id + 'EndDate'"
-              name="End Date"
-              @input="applyFilter('date', $event.target.value, column.data.id, 'end')"
-              :v-model="column.data.id"
-            >
-          </div>
-        </div>
-        <div v-else>
-          <div class="text-input">
-            <label :for="column.data.id + 'Filter'">{{ column.data.name }}</label>
-            <input
-              type="text"
-              :id="column.data.id + 'Filter'"
-              :placeholder="column.data.name"
-              @input="applyFilter('text', $event.target.value, column.data.id)"
-              :v-model="column.data.id"
-            >
+          <div v-else>
+            <div class="text-input">
+              <label :for="column.data.id + 'Filter'">{{ column.data.name }}</label>
+              <input
+                type="text"
+                :id="column.data.id + 'Filter'"
+                :placeholder="column.data.name"
+                @input="applyFilter('text', $event.target.value, column.data.id)"
+                :v-model="column.data.id"
+              >
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="data-table-wrapper">
+
+    <div class="data-table-wrapper grid-cell span-12-xs span-9-lg">
       <table class="data-table">
         <thead>
           <tr>
@@ -193,9 +196,6 @@ export default Vue.extend({
         this.pagination.endEllipsis = true;
       }
 
-      console.log(this.filteredRecords.length, this.pagination.totalPages);
-      console.log(start, end);
-
       this.pagination.range = _.range(start, end);
 
       this.getData();
@@ -310,24 +310,17 @@ export default Vue.extend({
 @import "@/styles/global.scss";
 
 .data-table-page {
-  display: flex;
-  flex-wrap: wrap;
-
   .filters {
-    flex: 0 1 20%;
-
     h2 {
       text-align: center;
     }
 
     .filter {
-      margin: 10px;
+      margin: 0 10px 0 0;
     }
   }
 
   .data-table-wrapper {
-    flex: 1 0 80%;
-
     .negative {
       color: $danger;
     }

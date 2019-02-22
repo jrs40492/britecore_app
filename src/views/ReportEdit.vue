@@ -212,15 +212,4 @@ export default Vue.extend({
 
 <style lang="scss">
 @import "@/styles/global.scss";
-
-#report-upload-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-
-  #file-upload-wrapper,
-  #column-options-wrapper {
-    flex: 0 1 50%;
-    padding: 25px;
-  }
-}
 </style>

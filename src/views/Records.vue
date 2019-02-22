@@ -1,18 +1,20 @@
 <template>
-  <div id="report-wrapper">
+  <div id="report-wrapper" class="grid grid-cell span-12-xs">
+    <ActionBar :actions="actions"></ActionBar>
     <DataTable :data="data"></DataTable>
-    <router-view></router-view>
   </div>
 </template>
 
 <script>
 import Vue from "vue";
 import DataTable from "@/components/DataTable.vue";
+import ActionBar from "@/components/ActionBar.vue";
 
 export default Vue.extend({
   name: "report",
   components: {
-    DataTable
+    DataTable,
+    ActionBar
   },
   data() {
     return {
@@ -23,7 +25,13 @@ export default Vue.extend({
           canEdit: true,
           canDelete: true
         }
-      }
+      },
+      actions: [
+        {
+          type: "back",
+          align: "left"
+        }
+      ]
     };
   },
   mounted() {

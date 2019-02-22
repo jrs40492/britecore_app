@@ -1,7 +1,6 @@
 <template>
-  <div id="column-option">
-    <h3>{{ field }}</h3>
-    <span v-if="dbKey"></span>
+  <div class="column-options">
+    <h3 class="field-name">{{ field }}</h3>
     <div class="text-input">
       <label :for="field + 'Name'">Name:</label>
       <input
@@ -98,8 +97,25 @@ export default Vue.extend({
 });
 </script>
 
-<style lang="sass">
+<style lang="scss">
 @import "@/styles/global.scss";
 
+.column-options {
+  padding: 10px 0;
+  border-top: 1px solid $border;
+
+  .field-name {
+    text-align: center;
+  }
+
+  .text-input,
+  .date-input,
+  .number-input,
+  .checkbox-input,
+  .select-input {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
 </style>
 
