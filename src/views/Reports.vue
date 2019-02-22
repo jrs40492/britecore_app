@@ -41,7 +41,8 @@ export default Vue.extend({
             data: {
               id: "name",
               name: "Report",
-              type: "link"
+              type: "link",
+              visible: true
             }
           },
           {
@@ -49,7 +50,8 @@ export default Vue.extend({
             data: {
               id: "createdOn",
               name: "Created",
-              type: "date"
+              type: "date",
+              visible: true
             }
           }
         ],

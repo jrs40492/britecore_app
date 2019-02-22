@@ -37,6 +37,7 @@ export default Vue.extend({
         .collection("reports")
         .doc(this.$route.params.reportId)
         .collection("columns")
+        .orderBy("order", "asc")
         .get()
         .then(querySnapshot => {
           querySnapshot.forEach(doc => {

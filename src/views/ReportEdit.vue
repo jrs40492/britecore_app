@@ -1,22 +1,5 @@
 <template>
   <div id="report-upload-wrapper">
-    <div id="file-upload-wrapper">
-      <h3>Instructions:</h3>
-      <p>
-        Click the button below to upload a CSV file. The file must contain the headers in the first row in order
-        to function properly.
-      </p>
-      <div class="file-input">
-        <label for="report-upload">Upload report (CSV)</label>
-        <input
-          id="report-upload"
-          type="file"
-          title="Upload Report (CSV)"
-          @change="checkFile($event)"
-        >
-      </div>
-    </div>
-
     <div id="column-options-wrapper">
       <h3>Report Settings</h3>
       <form
@@ -26,34 +9,48 @@
       >
         <div class="text-input">
           <label for="reportTitle">Report Title</label>
-          <input type="text" name="reportTitle" id="reportTitle">
+          <input type="text" name="reportTitle" id="reportTitle" :value="info.name">
         </div>
         <div class="text-input">
           <label for="uniqueColumn">Unique Column:</label>
           <select name="uniqueColumn" id="uniqueColumn">
             <option
-              v-for="(column, colIndex) in columns"
-              :key="colIndex"
-              :value="column"
-            >{{ column }}</option>
+              v-for="(column, index) in columns"
+              :key="index"
+              :value="column.data.id"
+              :selected="info.settings.uniqueColumn == column.data.id"
+            >{{ column.data.id }}</option>
           </select>
         </div>
         <div class="checkbox-input">
           <label for="canEdit">Data Editable?</label>
-          <input type="checkbox" name="canEdit" id="canEdit" data-type="bool" checked>
+          <input
+            type="checkbox"
+            name="canEdit"
+            id="canEdit"
+            data-type="bool"
+            :checked="info.settings.canEdit"
+          >
         </div>
         <div class="checkbox-input">
           <label for="canDelete">Data Deletable?</label>
-          <input type="checkbox" name="canDelete" id="canDelete" data-type="bool">
+          <input
+            type="checkbox"
+            name="canDelete"
+            id="canDelete"
+            data-type="bool"
+            :checked="info.settings.canDelete"
+          >
         </div>
         <ColumnOption
           v-for="(column, index) in columns"
           :key="index"
-          :field="column"
-          :data="{}"
+          :field="column.data.id"
+          :data="column.data"
+          :dbKey="column.id"
           :index="index"
         ></ColumnOption>
-        <input type="submit" value="Upload">
+        <input type="submit" value="Save">
       </form>
     </div>
   </div>
@@ -61,49 +58,28 @@
 
 <script>
 import _ from "lodash";
-import uuidv4 from "uuid/v4";
 import Vue from "vue";
 import firebase from "firebase";
-import papa from "papaparse";
 import ColumnOption from "@/components/ColumnOption.vue";
 
 export default Vue.extend({
-  name: "reportUpload",
+  name: "reportEdit",
   components: {
     ColumnOption
   },
   data() {
     return {
-      columns: [],
-      fileResults: {}
+      info: [],
+      columns: []
     };
   },
+  created() {
+    this.getInfo();
+    this.getColumns();
+  },
   methods: {
-    checkFile(event) {
-      const file = event.target.files[0];
-
-      papa.parse(file, {
-        delimiter: ",",
-        header: true,
-        complete: (results, file) => {
-          if (results.errors.length > 0) {
-            // TODO: Implement error logging and display to user
-            return;
-          }
-
-          // Get column headers to display report settings
-          if (results.meta.fields.length > 0) {
-            this.columns = results.meta.fields;
-          }
-
-          // Set results to be accessible in other methods
-          this.fileResults = results;
-        }
-      });
-    },
     processReportSettings(event) {
       const elements = event.target.elements;
-      const fileData = this.fileResults.data;
 
       // Get the report title out of the elements
       const reportTitle = elements.namedItem("reportTitle").value;
@@ -118,13 +94,15 @@ export default Vue.extend({
       }
 
       const db = this.$store.state.db;
-      const reportsRef = db.collection("reports").doc();
+      const reportsRef = db
+        .collection("reports")
+        .doc(this.$route.params.reportId);
       const batch = db.batch();
 
       const reportInfo = {
-        id: uuidv4(),
         name: reportTitle,
-        createdOn: firebase.firestore.Timestamp.now(),
+        createdOn: this.info.createdOn,
+        updatedOn: firebase.firestore.Timestamp.now(),
         settings: {
           uniqueColumn,
           canEdit,
@@ -134,16 +112,10 @@ export default Vue.extend({
 
       batch.set(reportsRef, reportInfo);
 
-      fileData.forEach(record => {
-        let recordRef = reportsRef.collection("records").doc();
-        batch.set(recordRef, record);
-      });
-
       Promise.all([...elements].map(this.processColumnSetting))
         .then(columnSettings => {
           const promises = new Promise((resolve, reject) => {
             const columns = [];
-            const count = columnSettings.length;
 
             columnSettings.forEach((setting, index) => {
               if (setting) {
@@ -152,9 +124,10 @@ export default Vue.extend({
                 }
 
                 columns[setting.field][setting.type] = setting.value;
+                columns[setting.field].dbKey = setting.dbKey;
               }
 
-              if (index === count - 1) resolve(columns);
+              resolve(columns);
             });
           });
 
@@ -164,7 +137,10 @@ export default Vue.extend({
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
-                let columnRef = reportsRef.collection("columns").doc();
+                console.log(settings);
+                let columnRef = reportsRef
+                  .collection("columns")
+                  .doc(settings.dbKey);
                 batch.set(columnRef, settings);
               }
               return;
@@ -183,25 +159,29 @@ export default Vue.extend({
         // Get the field/column name to group settings based on column
         const field = element.getAttribute("data-field");
 
-        // Get type to convert values (Bools)
-        const type = element.getAttribute("data-type");
-        let value = element.value;
-
         // Skip any fields that don't have data-field
         if (!field) {
           resolve();
           return;
         }
 
+        // Get type to convert values (Bools)
+        const type = element.getAttribute("data-type");
+        const dbKey = element.getAttribute("data-db-key");
+
+        let value;
+
         switch (type) {
           case "bool":
-            value = value === "on" ? true : false;
+            value = element.checked;
             break;
           default:
+            value = element.value;
             break;
         }
 
         const settings = {
+          dbKey,
           field,
           type: element.name,
           value
@@ -209,6 +189,36 @@ export default Vue.extend({
 
         resolve(settings);
       });
+    },
+    getInfo(callback) {
+      this.$store.state.db
+        .collection("reports")
+        .doc(this.$route.params.reportId)
+        .get()
+        .then(doc => {
+          if (doc.exists) {
+            this.info = doc.data();
+          } else {
+            // TODO: Properly handle error
+            console.log("Document doesn't exist");
+          }
+        });
+    },
+    getColumns() {
+      this.$store.state.db
+        .collection("reports")
+        .doc(this.$route.params.reportId)
+        .collection("columns")
+        .orderBy("order", "asc")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.columns.push({
+              id: doc.id,
+              data: doc.data()
+            });
+          });
+        });
     }
   }
 });

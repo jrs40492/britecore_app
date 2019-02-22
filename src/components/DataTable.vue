@@ -4,7 +4,7 @@
       <h2>Filters</h2>
       <div
         class="filter"
-        v-for="(column, colIndex) in data.columns.filter(x => x.canFilter)"
+        v-for="(column, colIndex) in data.columns.filter(x => x.data.canFilter && x.data.visible)"
         :key="colIndex"
       >
         <div v-if="column.data.type === 'currency' || column.data.type === 'number'">
@@ -64,7 +64,7 @@
         <thead>
           <tr>
             <th
-              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible !== false)"
+              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)"
               :key="colIndex"
               @click="sort(column)"
             >{{ column.data.name }}</th>
@@ -75,7 +75,7 @@
         <tbody v-if="records">
           <tr v-for="record in records" :key="record.id">
             <td
-              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible !== false)"
+              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)"
               :key="colIndex"
             >
               <span v-if="column.data.type === 'date'">{{ formatDate(record.data[column.data.id]) }}</span>
@@ -91,7 +91,7 @@
               <span v-else>{{ record.data[column.data.id] }}</span>
             </td>
             <td v-if="data.options.canEdit && data.uniqueColumn" class="icon-cell">
-              <router-link :to="record.data[data.uniqueColumn]" append :record="record">
+              <router-link :to="record.id + '/edit'" append>
                 <i class="material-icons">edit</i>
               </router-link>
             </td>
@@ -156,7 +156,6 @@ export default Vue.extend({
   },
   methods: {
     setData(data) {
-      console.log(this.data);
       if ((this.data && this.data.records) || data) {
         this.allRecords = this.filteredRecords = data || this.data.records;
 
