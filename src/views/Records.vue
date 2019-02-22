@@ -19,7 +19,6 @@ export default Vue.extend({
       data: {
         records: [],
         columns: [],
-        uniqueColumn: "ID",
         options: {
           canEdit: true,
           canDelete: true

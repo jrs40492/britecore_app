@@ -90,7 +90,7 @@
               >{{ formatCurrency(record.data[column.data.id]) }}</span>
               <span v-else>{{ record.data[column.data.id] }}</span>
             </td>
-            <td v-if="data.options.canEdit && data.uniqueColumn" class="icon-cell">
+            <td v-if="data.options.canEdit" class="icon-cell">
               <router-link :to="record.id + '/edit'" append>
                 <i class="material-icons">edit</i>
               </router-link>
@@ -316,21 +316,6 @@ export default Vue.extend({
         (this.pagination.currentPage - 1) * this.pagination.limit +
         this.pagination.limit;
       this.records = this.filteredRecords.slice(start, end || -1);
-    },
-    formatCurrency(number) {
-      const formatter = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2
-      });
-
-      return formatter.format(number);
-    },
-    formatDate(date) {
-      if (typeof date === "string") {
-        return new Date(date).toLocaleString();
-      }
-      return date.toDate().toLocaleString();
     }
   }
 });

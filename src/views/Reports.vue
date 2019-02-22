@@ -25,7 +25,6 @@ export default Vue.extend({
   data() {
     return {
       data: {
-        uniqueColumn: "id",
         records: [],
         columns: [
           {

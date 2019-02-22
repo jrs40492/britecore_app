@@ -28,16 +28,6 @@
           <label for="reportTitle">Report Title</label>
           <input type="text" name="reportTitle" id="reportTitle">
         </div>
-        <div class="text-input">
-          <label for="uniqueColumn">Unique Column:</label>
-          <select name="uniqueColumn" id="uniqueColumn">
-            <option
-              v-for="(column, colIndex) in columns"
-              :key="colIndex"
-              :value="column"
-            >{{ column }}</option>
-          </select>
-        </div>
         <div class="checkbox-input">
           <label for="canEdit">Data Editable?</label>
           <input type="checkbox" name="canEdit" id="canEdit" data-type="bool" checked>
@@ -107,7 +97,6 @@ export default Vue.extend({
 
       // Get the report title out of the elements
       const reportTitle = elements.namedItem("reportTitle").value;
-      const uniqueColumn = elements.namedItem("uniqueColumn").value;
       const canEdit =
         elements.namedItem("canEdit").value === "on" ? true : false;
       const canDelete =
@@ -126,7 +115,6 @@ export default Vue.extend({
         name: reportTitle,
         createdOn: firebase.firestore.Timestamp.now(),
         settings: {
-          uniqueColumn,
           canEdit,
           canDelete
         }
