@@ -30,7 +30,6 @@
 
 <script>
 import Vue from "vue";
-import firebase from "firebase";
 import ActionBar from "@/components/ActionBar.vue";
 
 export default Vue.extend({

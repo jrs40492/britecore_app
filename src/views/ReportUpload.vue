@@ -55,7 +55,8 @@
 import _ from "lodash";
 import uuidv4 from "uuid/v4";
 import Vue from "vue";
-import firebase from "firebase";
+import firebase from "firebase/app";
+import "firebase/firestore";
 import papa from "papaparse";
 import ColumnOption from "@/components/ColumnOption.vue";
 import ActionBar from "@/components/ActionBar.vue";
@@ -107,10 +108,8 @@ export default Vue.extend({
 
       // Get the report title out of the elements
       const reportTitle = elements.namedItem("reportTitle").value;
-      const canEdit =
-        elements.namedItem("canEdit").value === "on" ? true : false;
-      const canDelete =
-        elements.namedItem("canDelete").value === "on" ? true : false;
+      const canEdit = elements.namedItem("canEdit").checked;
+      const canDelete = elements.namedItem("canDelete").checked;
 
       if (!reportTitle) {
         return;
@@ -189,14 +188,6 @@ export default Vue.extend({
         if (!field) {
           resolve();
           return;
-        }
-
-        switch (type) {
-          case "bool":
-            value = value === "on" ? true : false;
-            break;
-          default:
-            break;
         }
 
         const settings = {

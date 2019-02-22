@@ -1,46 +1,49 @@
 <template>
-  <div id="report-upload-wrapper">
-    <div id="column-options-wrapper">
-      <h3>Report Settings</h3>
-      <form
-        @submit.prevent="processReportSettings"
-        id="column-options-form"
-        v-if="columns.length > 0"
-      >
-        <div class="text-input">
-          <label for="reportTitle">Report Title</label>
-          <input type="text" name="reportTitle" id="reportTitle" :value="info.name">
-        </div>
-        <div class="checkbox-input">
-          <label for="canEdit">Data Editable?</label>
-          <input
-            type="checkbox"
-            name="canEdit"
-            id="canEdit"
-            data-type="bool"
-            :checked="info.settings.canEdit"
-          >
-        </div>
-        <div class="checkbox-input">
-          <label for="canDelete">Data Deletable?</label>
-          <input
-            type="checkbox"
-            name="canDelete"
-            id="canDelete"
-            data-type="bool"
-            :checked="info.settings.canDelete"
-          >
-        </div>
-        <ColumnOption
-          v-for="(column, index) in columns"
-          :key="index"
-          :field="column.data.id"
-          :data="column.data"
-          :dbKey="column.id"
-          :index="index"
-        ></ColumnOption>
-        <input type="submit" value="Save">
-      </form>
+  <div id="report-upload-wrapper" class="grid grid-cell span-12-xs">
+    <ActionBar :actions="actions"></ActionBar>
+    <div id="column-options-wrapper" class="card grid-cell span-12-xs">
+      <div class="card-header">Report Settings</div>
+      <div class="card-body">
+        <form
+          @submit.prevent="processReportSettings"
+          id="column-options-form"
+          v-if="columns.length > 0"
+        >
+          <div class="text-input">
+            <label for="reportTitle">Report Title</label>
+            <input type="text" name="reportTitle" id="reportTitle" :value="info.name">
+          </div>
+          <div class="checkbox-input">
+            <label for="canEdit">Data Editable?</label>
+            <input
+              type="checkbox"
+              name="canEdit"
+              id="canEdit"
+              data-type="bool"
+              :checked="info.settings.canEdit"
+            >
+          </div>
+          <div class="checkbox-input">
+            <label for="canDelete">Data Deletable?</label>
+            <input
+              type="checkbox"
+              name="canDelete"
+              id="canDelete"
+              data-type="bool"
+              :checked="info.settings.canDelete"
+            >
+          </div>
+          <ColumnOption
+            v-for="(column, index) in columns"
+            :key="index"
+            :field="column.data.id"
+            :data="column.data"
+            :dbKey="column.id"
+            :index="index"
+          ></ColumnOption>
+          <button type="submit" value="Save">Save</button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -48,18 +51,27 @@
 <script>
 import _ from "lodash";
 import Vue from "vue";
-import firebase from "firebase";
+import firebase from "firebase/app";
+import "firebase/firestore";
 import ColumnOption from "@/components/ColumnOption.vue";
+import ActionBar from "@/components/ActionBar.vue";
 
 export default Vue.extend({
   name: "reportEdit",
   components: {
-    ColumnOption
+    ColumnOption,
+    ActionBar
   },
   data() {
     return {
       info: [],
-      columns: []
+      columns: [],
+      actions: [
+        {
+          type: "back",
+          align: "left"
+        }
+      ]
     };
   },
   created() {
@@ -72,10 +84,8 @@ export default Vue.extend({
 
       // Get the report title out of the elements
       const reportTitle = elements.namedItem("reportTitle").value;
-      const canEdit =
-        elements.namedItem("canEdit").value === "on" ? true : false;
-      const canDelete =
-        elements.namedItem("canDelete").value === "on" ? true : false;
+      const canEdit = elements.namedItem("canEdit").checked;
+      const canDelete = elements.namedItem("canDelete").checked;
 
       if (!reportTitle) {
         return;

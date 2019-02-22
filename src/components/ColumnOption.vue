@@ -50,7 +50,7 @@
         :id="field + 'Visible'"
         :data-field="field"
         data-type="bool"
-        :checked="data.visible || true ? true : false"
+        :checked="data.visible"
         :data-db-key="dbKey"
       >
     </div>
@@ -62,7 +62,7 @@
         :id="field + 'Filter'"
         :data-field="field"
         data-type="bool"
-        :checked="data.canFilter || true ? true : false"
+        :checked="data.canFilter"
         :data-db-key="dbKey"
       >
     </div>

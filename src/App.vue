@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="main-nav">
-      <router-link to="/">Home</router-link>
+      <router-link to="/" exact>Home</router-link>
       <router-link to="/reports">Reports</router-link>
     </div>
     <router-view class="grid"/>
@@ -33,7 +33,7 @@
     padding: 15px 20px;
     color: $primary-font;
 
-    &.router-link-exact-active {
+    &.router-link-active {
       background-color: $primary-font;
       color: $secondary-font;
     }
