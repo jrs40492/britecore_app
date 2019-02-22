@@ -85,7 +85,13 @@ export default Vue.extend({
         });
     },
     save() {
-      console.log(this.data);
+      this.$store.state.db
+        .collection("reports")
+        .doc(this.$route.params.reportId)
+        .collection("records")
+        .doc(this.$route.params.recordId)
+        .set(this.data, { merge: true })
+        .then(this.$router.go(-1));
     }
   }
 });

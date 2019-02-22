@@ -89,7 +89,6 @@ export default Vue.extend({
 
       const reportInfo = {
         name: reportTitle,
-        createdOn: this.info.createdOn,
         updatedOn: firebase.firestore.Timestamp.now(),
         settings: {
           canEdit,
@@ -97,7 +96,7 @@ export default Vue.extend({
         }
       };
 
-      batch.set(reportsRef, reportInfo);
+      batch.set(reportsRef, reportInfo, { merge: true });
 
       Promise.all([...elements].map(this.processColumnSetting))
         .then(columnSettings => {

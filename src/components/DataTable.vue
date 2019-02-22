@@ -8,54 +8,60 @@
         :key="colIndex"
       >
         <div v-if="column.data.type === 'currency' || column.data.type === 'number'">
-          <div class="number-input">
+          <div class="text-input">
             <label :for="column.data.id + 'Min'">Min {{ column.data.name }}:</label>
             <input
               type="number"
+              placeholder="0"
               :id="column.data.id + 'Min'"
               :v-model="column.data.id"
-              @input="numberFilter($event.target.value, column.data.id, 'min', true)"
+              @input="applyFilter('number', $event.target.value, column.data.id, 'min')"
             >
           </div>
-          <div class="number-input">
+          <div class="text-input">
             <label :for="column.data.id + 'Max'">Max {{ column.data.name }}:</label>
             <input
               type="number"
+              placeholder="1000"
               :id="column.data.id + 'Max'"
               :v-model="column.data.id"
-              @input="numberFilter($event.target.value, column.data.id, 'max', true)"
+              @input="applyFilter('number', $event.target.value, column.data.id, 'max')"
             >
           </div>
         </div>
         <div v-else-if="column.data.type === 'date'">
-          <div class="date-input">
+          <div class="text-input">
             <label :for="column.data.id + 'StartDate'">Start {{ column.data.name }}:</label>
             <input
               type="date"
               :id="column.data.id + 'StartDate'"
               name="Start Date"
-              @input="dateFilter($event.target.value, column.data.id, 'start', true)"
+              @input="applyFilter('date', $event.target.value, column.data.id, 'start')"
               :v-model="column.data.id"
             >
           </div>
-          <div class="date-input">
+          <div class="text-input">
             <label :for="column.data.id + 'EndDate'">End {{ column.data.name }}:</label>
             <input
               type="date"
               :id="column.data.id + 'EndDate'"
               name="End Date"
-              @input="dateFilter($event.target.value, column.data.id, 'end', true)"
+              @input="applyFilter('date', $event.target.value, column.data.id, 'end')"
               :v-model="column.data.id"
             >
           </div>
         </div>
         <div v-else>
-          <input
-            type="text"
-            :placeholder="'Filter by ' + column.data.name"
-            @input="textFilter($event.target.value, column.data.id, true)"
-            :v-model="column.data.id"
-          >
+          <div class="text-input">
+            <label :for="column.data.id + 'Filter'">{{ column.data.name }}</label>
+            <input
+              type="text"
+              :id="column.data.id + 'Filter'"
+              :placeholder="column.data.name"
+              @input="applyFilter('text', $event.target.value, column.data.id)"
+              :v-model="column.data.id"
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -106,14 +112,14 @@
       </table>
       <div class="pagination" v-if="pagination.totalPages > 1">
         <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="navigate(1)">1</div>
-        <div v-if="pagination.startEllipsis" class="ellipsis">...</div>
+        <div v-if="pagination.startEllipsis" class="ellipsis start">...</div>
         <div
           v-for="page in pagination.range"
           :key="page"
           :class="pagination.currentPage === page ? 'active' : ''"
           @click="navigate(page)"
         >{{ page }}</div>
-        <div v-if="pagination.endEllipsis" class="ellipsis">...</div>
+        <div v-if="pagination.endEllipsis" class="ellipsis end">...</div>
         <div
           :class="pagination.currentPage === pagination.totalPages ? 'active' : ''"
           @click="navigate(pagination.totalPages)"
@@ -163,9 +169,6 @@ export default Vue.extend({
       }
     },
     updatePagination() {
-      let start = 2;
-      let end = this.pagination.totalPages;
-
       this.pagination.startEllipsis = false;
       this.pagination.endEllipsis = false;
 
@@ -173,6 +176,9 @@ export default Vue.extend({
       this.pagination.totalPages = Math.ceil(
         this.filteredRecords.length / this.pagination.limit
       );
+
+      let start = 2;
+      let end = this.pagination.totalPages;
 
       if (this.pagination.currentPage - 2 > 2) {
         start = this.pagination.currentPage - 2;
@@ -187,6 +193,9 @@ export default Vue.extend({
         this.pagination.endEllipsis = true;
       }
 
+      console.log(this.filteredRecords.length, this.pagination.totalPages);
+      console.log(start, end);
+
       this.pagination.range = _.range(start, end);
 
       this.getData();
@@ -195,22 +204,26 @@ export default Vue.extend({
       this.pagination.currentPage = page;
       this.updatePagination();
     },
-    upsertFilter(id, type, params) {
+    applyFilter(type, value, id, version = "") {
+      // Generate unique ID to track active filters
+      const uniqueId = `${id}${type}${version}`;
+
       // Check if the filter already exists
-      if (_.find(this.activeFilters, { id })) {
-        if (!params.value) {
+      if (_.find(this.activeFilters, { uniqueId })) {
+        if (!value) {
           // Value was cleared so remove filter
-          _.unset(this.activeFilters, id);
+          _.unset(this.activeFilters, uniqueId);
         } else {
           // Update filter to have new value
-          this.activeFilters[id].params = params;
+          this.activeFilters[uniqueId].value = value;
         }
       } else {
         // Add new filter
-        this.activeFilters[id] = {
-          id,
+        this.activeFilters[uniqueId] = {
           type,
-          params
+          value,
+          columnId: id,
+          version
         };
       }
 
@@ -230,72 +243,44 @@ export default Vue.extend({
         const filter = this.activeFilters[key];
         switch (filter.type) {
           case "date":
-            this.dateFilter(
-              filter.params.value,
-              filter.params.columnId,
-              filter.params.type,
-              false
-            );
+            this.dateFilter(filter.value, filter.columnId, filter.version);
             break;
           case "text":
-            this.textFilter(filter.params.value, filter.params.columnId, false);
+            this.textFilter(filter.value, filter.columnId);
             break;
           case "number":
-            this.numberFilter(
-              filter.params.value,
-              filter.params.columnId,
-              filter.params.type,
-              false
-            );
+            this.numberFilter(filter.value, filter.columnId, filter.version);
             break;
           default:
             break;
         }
       });
     },
-    dateFilter(value, columnId, type, isNew) {
-      if (isNew) {
-        // Only upsert filter if it came from user input, not a method
-        this.upsertFilter(columnId + type, "date", { value, columnId, type });
-        return;
-      }
-
+    dateFilter(value, columnId, type) {
       const filterDate = new Date(value).setHours(0, 0, 0, 0);
       this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === "start") {
-          return new Date(x[columnId]).setHours(0, 0, 0, 0) >= filterDate;
+          return new Date(x.data[columnId]).setHours(0, 0, 0, 0) >= filterDate;
         } else {
-          return new Date(x[columnId]).setHours(0, 0, 0, 0) <= filterDate;
+          return new Date(x.data[columnId]).setHours(0, 0, 0, 0) <= filterDate;
         }
       });
       this.navigate(1);
     },
-    textFilter(value, columnId, isNew) {
-      if (isNew) {
-        // Only upsert filter if it came from user input, not a method
-        this.upsertFilter(columnId, "text", { value, columnId });
-        return;
-      }
-
+    textFilter(value, columnId) {
       this.filteredRecords = this.filteredRecords.filter(x =>
-        new RegExp(value, "i").test(x[columnId])
+        new RegExp(value, "i").test(x.data[columnId])
       );
       this.navigate(1);
     },
-    numberFilter(value, columnId, type, isNew) {
-      if (isNew) {
-        // Only upsert filter if it came from user input, not a method
-        this.upsertFilter(columnId + type, "number", { value, columnId, type });
-        return;
-      }
-
+    numberFilter(value, columnId, type) {
       const numValue = parseFloat(value);
 
       this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === "min") {
-          return x[columnId] >= numValue;
+          return x.data[columnId] >= numValue;
         } else {
-          return x[columnId] <= numValue;
+          return x.data[columnId] <= numValue;
         }
       });
       this.navigate(1);
@@ -344,14 +329,14 @@ export default Vue.extend({
     flex: 1 0 80%;
 
     .negative {
-      color: red;
+      color: $danger;
     }
 
     .icon-cell {
       text-align: center;
 
       .delete {
-        color: red;
+        color: $danger;
       }
     }
 
