@@ -5,16 +5,42 @@ table {
   td,
   th {
     border: 1px solid $border;
-    padding: 2px 0 2px 4px;
+    padding: 2px 4px;
   }
 
   thead {
     background-color: $primary-color;
-    color: white;
+    color: $primary-font;
     height: 30px;
 
     tr {
       height: 30px;
+
+      th {
+        &.sortable {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+
+  tbody {
+    td {
+      &.icon-cell {
+        text-align: center;
+
+        .delete {
+          color: $danger;
+        }
+      }
+
+      &.negative {
+        color: $danger;
+      }
+
+      &.number {
+        text-align: right;
+      }
     }
   }
 }

@@ -98,7 +98,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import "@/styles/global.scss";
+@import "@/styles/_variables.scss";
 
 .column-options {
   padding: 10px 0;

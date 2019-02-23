@@ -41,8 +41,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "@/styles/global.scss";
-
 #action-bar {
   padding: 0 0 5px 0;
   display: flex;

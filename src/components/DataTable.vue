@@ -76,29 +76,36 @@
               v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)"
               :key="colIndex"
               @click="sort(column)"
-            >{{ column.data.name }}</th>
+              class="sortable"
+            >
+              {{ column.data.name }}
+              <template v-if="currentSort === column.data.name">
+                <i class="material-icons" v-if="column.data.sort_direction === 'asc'">arrow_drop_up</i>
+                <i class="material-icons" v-else>arrow_drop_down</i>
+              </template>
+            </th>
             <th v-if="data.options.canEdit">Edit</th>
             <th v-if="data.options.canDelete">Delete</th>
           </tr>
         </thead>
         <tbody v-if="records">
           <tr v-for="record in records" :key="record.id">
-            <td
-              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)"
-              :key="colIndex"
-            >
-              <span v-if="column.data.type === 'date'">{{ formatDate(record.data[column.data.id]) }}</span>
-              <router-link
-                :to="record.id"
-                v-else-if="column.data.type ==='link'"
-                append
-              >{{ record.data[column.data.id] }}</router-link>
-              <span
+            <template v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)">
+              <td
+                v-if="column.data.type === 'date'"
+                :key="colIndex"
+              >{{ formatDate(record.data[column.data.id]) }}</td>
+              <td v-else-if="column.data.type ==='link'" :key="colIndex">
+                <router-link :to="record.id" append>{{ record.data[column.data.id] }}</router-link>
+              </td>
+              <td
                 v-else-if="column.data.type === 'currency'"
                 :class="record.data[column.data.id] < 0 ? 'negative' : ''"
-              >{{ formatCurrency(record.data[column.data.id]) }}</span>
-              <span v-else>{{ record.data[column.data.id] }}</span>
-            </td>
+                class="number"
+                :key="colIndex"
+              >{{ formatCurrency(record.data[column.data.id]) }}</td>
+              <td v-else :key="colIndex">{{ record.data[column.data.id] }}</td>
+            </template>
             <td v-if="data.options.canEdit" class="icon-cell">
               <router-link :to="record.id + '/edit'" append>
                 <i class="material-icons">edit</i>
@@ -145,6 +152,7 @@ export default Vue.extend({
       filteredRecords: [],
       records: [],
       activeFilters: {},
+      currentSort: "",
       pagination: {
         limit: 10,
         currentPage: 1,
@@ -209,7 +217,11 @@ export default Vue.extend({
       const uniqueId = `${id}${type}${version}`;
 
       // Check if the filter already exists
-      if (_.find(this.activeFilters, { uniqueId })) {
+      if (
+        _.find(this.activeFilters, function(x, index) {
+          return index === uniqueId;
+        })
+      ) {
         if (!value) {
           // Value was cleared so remove filter
           _.unset(this.activeFilters, uniqueId);
@@ -226,6 +238,8 @@ export default Vue.extend({
           version
         };
       }
+
+      console.log(this.activeFilters);
 
       // Reset filtered records back to entire list
       this.filteredRecords = this.allRecords;
@@ -288,9 +302,12 @@ export default Vue.extend({
     sort(column) {
       column.data.sort_direction =
         column.data.sort_direction === "asc" ? "desc" : "asc";
+      this.currentSort = column.data.id;
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
-        column.data.id,
+        function(e) {
+          return e.data[column.data.id];
+        },
         column.data.sort_direction
       );
       this.getData();
@@ -307,7 +324,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import "@/styles/global.scss";
+@import "@/styles/_variables.scss";
 
 .data-table-page {
   .filters {
@@ -321,18 +338,6 @@ export default Vue.extend({
   }
 
   .data-table-wrapper {
-    .negative {
-      color: $danger;
-    }
-
-    .icon-cell {
-      text-align: center;
-
-      .delete {
-        color: $danger;
-      }
-    }
-
     .data-table,
     .pagination {
       width: 100%;

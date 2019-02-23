@@ -89,7 +89,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import "@/styles/global.scss";
+@import "@/styles/_variables.scss";
 
 a.icon-link {
   align-self: center;
