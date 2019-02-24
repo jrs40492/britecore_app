@@ -1,8 +1,11 @@
-# britecore_app
+# BriteCore Engineering Application
+
 
 ## Project setup
 ```
-npm install
+1. Rename .env.example to .env
+2. Plug in firestore config values
+3. npm install
 ```
 
 ### Compiles and hot-reloads for development

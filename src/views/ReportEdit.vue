@@ -73,15 +73,21 @@ export default Vue.extend({
     };
   },
   created() {
-    this.$store.dispatch("report/getSettings", this.$route.params.reportId);
-    this.$store.dispatch("report/getColumns", this.$route.params.reportId);
+    this.$store.dispatch(
+      "reports/getReportSettings",
+      this.$route.params.reportId
+    );
+    this.$store.dispatch(
+      "reports/getReportColumns",
+      this.$route.params.reportId
+    );
   },
   computed: {
     columns() {
-      return this.$store.state.report.columns;
+      return this.$store.state.reports.report.columns;
     },
     settings() {
-      return this.$store.state.report.settings;
+      return this.$store.state.reports.report.settings;
     }
   },
   methods: {
@@ -138,9 +144,11 @@ export default Vue.extend({
                 columns
               };
 
-              this.$store.dispatch("report/update", reportInfo).then(() => {
-                this.$router.go(-1);
-              });
+              this.$store
+                .dispatch("reports/updateReport", reportInfo)
+                .then(() => {
+                  this.$router.go(-1);
+                });
             });
         })
         .catch(err => {

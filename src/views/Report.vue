@@ -17,18 +17,24 @@ export default Vue.extend({
     ActionBar
   },
   created() {
-    this.$store.dispatch("report/getColumns", this.$route.params.reportId);
-    this.$store.dispatch("report/getRecords", this.$route.params.reportId);
+    this.$store.dispatch(
+      "reports/getReportColumns",
+      this.$route.params.reportId
+    );
+    this.$store.dispatch(
+      "reports/getReportRecords",
+      this.$route.params.reportId
+    );
   },
   computed: {
     columns() {
-      return this.$store.state.report.columns;
+      return this.$store.state.reports.report.columns;
     },
     records() {
-      return this.$store.state.report.records;
+      return this.$store.state.reports.report.records;
     },
     options() {
-      return this.$store.state.report.options;
+      return this.$store.state.reports.report.options;
     }
   },
   data() {

@@ -48,7 +48,10 @@ export default Vue.extend({
     };
   },
   created() {
-    this.$store.dispatch("report/getColumns", this.$route.params.reportId);
+    this.$store.dispatch(
+      "reports/getReportColumns",
+      this.$route.params.reportId
+    );
     this.$store.dispatch("record/getRecord", {
       reportId: this.$route.params.reportId,
       recordId: this.$route.params.recordId
@@ -56,7 +59,7 @@ export default Vue.extend({
   },
   computed: {
     columns() {
-      return this.$store.state.report.columns;
+      return this.$store.state.reports.report.columns;
     },
     record() {
       return this.$store.state.record.record;

@@ -17,7 +17,7 @@ export default Vue.extend({
     ActionBar
   },
   created() {
-    this.$store.dispatch("reports/get");
+    this.$store.dispatch("reports/getAll");
   },
   computed: {
     records() {
