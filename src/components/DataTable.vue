@@ -3,64 +3,60 @@
     <div class="card grid-cell span-12-xs span-3-lg">
       <div class="card-header">Filters</div>
       <div class="card-body">
-        <div
-          class="filter"
-          v-for="(column, colIndex) in data.columns.filter(x => x.data.canFilter && x.data.visible)"
-          :key="colIndex"
-        >
-          <div v-if="column.data.type === 'currency' || column.data.type === 'number'">
+        <div class="filter" v-for="column in displayColumns" :key="column.id">
+          <div v-if="column.type === 'currency' || column.type === 'number'">
             <div class="number-input">
-              <label :for="column.data.id + 'Min'">Min {{ column.data.name }}:</label>
+              <label :for="column.id + 'Min'">Min {{ column.name }}:</label>
               <input
                 type="number"
                 placeholder="0"
-                :id="column.data.id + 'Min'"
-                :v-model="column.data.id"
-                @input="applyFilter('number', $event.target.value, column.data.id, 'min')"
+                :id="column.id + 'Min'"
+                :v-model="column.id"
+                @input="applyFilter('number', $event.target.value, column.id, 'min')"
               >
             </div>
             <div class="number-input">
-              <label :for="column.data.id + 'Max'">Max {{ column.data.name }}:</label>
+              <label :for="column.id + 'Max'">Max {{ column.name }}:</label>
               <input
                 type="number"
                 placeholder="1000"
-                :id="column.data.id + 'Max'"
-                :v-model="column.data.id"
-                @input="applyFilter('number', $event.target.value, column.data.id, 'max')"
+                :id="column.id + 'Max'"
+                :v-model="column.id"
+                @input="applyFilter('number', $event.target.value, column.id, 'max')"
               >
             </div>
           </div>
-          <div v-else-if="column.data.type === 'date'">
+          <div v-else-if="column.type === 'date'">
             <div class="date-input">
-              <label :for="column.data.id + 'StartDate'">Start {{ column.data.name }}:</label>
+              <label :for="column.id + 'StartDate'">Start {{ column.name }}:</label>
               <input
                 type="date"
-                :id="column.data.id + 'StartDate'"
+                :id="column.id + 'StartDate'"
                 name="Start Date"
-                @input="applyFilter('date', $event.target.value, column.data.id, 'start')"
-                :v-model="column.data.id"
+                @input="applyFilter('date', $event.target.value, column.id, 'start')"
+                :v-model="column.id"
               >
             </div>
             <div class="date-input">
-              <label :for="column.data.id + 'EndDate'">End {{ column.data.name }}:</label>
+              <label :for="column.id + 'EndDate'">End {{ column.name }}:</label>
               <input
                 type="date"
-                :id="column.data.id + 'EndDate'"
+                :id="column.id + 'EndDate'"
                 name="End Date"
-                @input="applyFilter('date', $event.target.value, column.data.id, 'end')"
-                :v-model="column.data.id"
+                @input="applyFilter('date', $event.target.value, column.id, 'end')"
+                :v-model="column.id"
               >
             </div>
           </div>
           <div v-else>
             <div class="text-input">
-              <label :for="column.data.id + 'Filter'">{{ column.data.name }}</label>
+              <label :for="column.id + 'Filter'">{{ column.name }}</label>
               <input
                 type="text"
-                :id="column.data.id + 'Filter'"
-                :placeholder="column.data.name"
-                @input="applyFilter('text', $event.target.value, column.data.id)"
-                :v-model="column.data.id"
+                :id="column.id + 'Filter'"
+                :placeholder="column.name"
+                @input="applyFilter('text', $event.target.value, column.id)"
+                :v-model="column.id"
               >
             </div>
           </div>
@@ -73,66 +69,65 @@
         <thead>
           <tr>
             <th
-              v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)"
-              :key="colIndex"
+              v-for="column in displayColumns"
+              :key="column.id"
               @click="sort(column)"
               class="sortable"
             >
-              {{ column.data.name }}
-              <template v-if="currentSort === column.data.name">
-                <i class="material-icons" v-if="column.data.sort_direction === 'asc'">arrow_drop_up</i>
+              {{ column.name }}
+              <template v-if="currentSort === column.name">
+                <i class="material-icons" v-if="column.sort_direction === 'asc'">arrow_drop_up</i>
                 <i class="material-icons" v-else>arrow_drop_down</i>
               </template>
             </th>
-            <th v-if="data.options.canEdit">Edit</th>
-            <th v-if="data.options.canDelete">Delete</th>
+            <th v-if="options.canEdit">Edit</th>
+            <th v-if="options.canDelete">Delete</th>
           </tr>
         </thead>
-        <tbody v-if="records">
-          <tr v-for="record in records" :key="record.id">
-            <template v-for="(column, colIndex) in data.columns.filter(x => x.data.visible)">
-              <td
-                v-if="column.data.type === 'date'"
-                :key="colIndex"
-              >{{ formatDate(record.data[column.data.id]) }}</td>
-              <td v-else-if="column.data.type ==='link'" :key="colIndex">
-                <router-link :to="record.id" append>{{ record.data[column.data.id] }}</router-link>
+        <tbody v-if="displayRecords.length > 0">
+          <tr v-for="(record, index) in displayRecords" :key="index">
+            <template v-for="column in displayColumns">
+              <td v-if="column.type === 'date'" :key="column.id">{{ formatDate(record[column.id]) }}</td>
+              <td v-else-if="column.type ==='link'" :key="column.id">
+                <router-link :to="record.id" append>{{ record[column.id] }}</router-link>
               </td>
               <td
-                v-else-if="column.data.type === 'currency'"
-                :class="record.data[column.data.id] < 0 ? 'negative' : ''"
+                v-else-if="column.type === 'currency'"
+                :class="record[column.id] < 0 ? 'negative' : ''"
                 class="number"
-                :key="colIndex"
-              >{{ formatCurrency(record.data[column.data.id]) }}</td>
-              <td v-else :key="colIndex">{{ record.data[column.data.id] }}</td>
+                :key="column.id"
+              >{{ formatCurrency(record[column.id]) }}</td>
+              <td v-else :key="column.id">{{ record[column.id] }}</td>
             </template>
-            <td v-if="data.options.canEdit" class="icon-cell">
+            <td v-if="options.canEdit" class="icon-cell">
               <router-link :to="record.id + '/edit'" append>
                 <i class="material-icons">edit</i>
               </router-link>
             </td>
-            <td v-if="data.options.canDelete" class="icon-cell">
+            <td v-if="options.canDelete" class="icon-cell">
               <i class="material-icons delete">delete</i>
             </td>
           </tr>
         </tbody>
         <tbody v-else>
-          <tr :colspan="records.length">There are no records to display!</tr>
+          <tr>
+            <td :colspan="columns.length">There are no records to display!</td>
+          </tr>
         </tbody>
       </table>
       <div class="pagination" v-if="pagination.totalPages > 1">
-        <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="navigate(1)">1</div>
+        <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="updatePagination(1)">1</div>
         <div v-if="pagination.startEllipsis" class="ellipsis start">...</div>
         <div
           v-for="page in pagination.range"
           :key="page"
           :class="pagination.currentPage === page ? 'active' : ''"
-          @click="navigate(page)"
+          @click="updatePagination(page)"
         >{{ page }}</div>
         <div v-if="pagination.endEllipsis" class="ellipsis end">...</div>
         <div
           :class="pagination.currentPage === pagination.totalPages ? 'active' : ''"
-          @click="navigate(pagination.totalPages)"
+          @click="updatePagination(pagination.totalPages)"
         >{{ pagination.totalPages }}</div>
       </div>
     </div>
@@ -145,12 +140,10 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "DataTable",
-  props: ["data"],
+  props: ["columns", "records", "options"],
   data() {
     return {
-      allRecords: [],
-      filteredRecords: [],
-      records: [],
+      // filteredRecords: [],
       activeFilters: {},
       currentSort: "",
       pagination: {
@@ -163,23 +156,23 @@ export default Vue.extend({
       }
     };
   },
-  mounted() {
-    this.setData();
-  },
-  watch: {
-    "data.records": function(val) {
-      this.setData(val);
+  computed: {
+    filteredRecords() {
+      return this.records;
+    },
+    displayColumns() {
+      return _.filter(this.columns, "visible");
+    },
+    displayRecords() {
+      return this.updatePagination();
     }
   },
   methods: {
-    setData(data) {
-      if ((this.data && this.data.records) || data) {
-        this.allRecords = this.filteredRecords = data || this.data.records;
-
-        this.updatePagination();
+    updatePagination(page) {
+      if (page) {
+        this.pagination.currentPage = page;
       }
-    },
-    updatePagination() {
+
       this.pagination.startEllipsis = false;
       this.pagination.endEllipsis = false;
 
@@ -206,11 +199,7 @@ export default Vue.extend({
 
       this.pagination.range = _.range(start, end);
 
-      this.getData();
-    },
-    navigate(page) {
-      this.pagination.currentPage = page;
-      this.updatePagination();
+      return this.getData();
     },
     applyFilter(type, value, id, version = "") {
       // Generate unique ID to track active filters
@@ -239,16 +228,14 @@ export default Vue.extend({
         };
       }
 
-      console.log(this.activeFilters);
-
       // Reset filtered records back to entire list
-      this.filteredRecords = this.allRecords;
+      this.filteredRecords = this.records;
 
       const filterKeys = Object.keys(this.activeFilters);
 
       // If all filters have been removed, reset page to 1
       if (filterKeys.length === 0) {
-        this.navigate(1);
+        // this.updatePagination(1);
         return;
       }
 
@@ -279,13 +266,13 @@ export default Vue.extend({
           return new Date(x.data[columnId]).setHours(0, 0, 0, 0) <= filterDate;
         }
       });
-      this.navigate(1);
+      // this.updatePagination(1);
     },
     textFilter(value, columnId) {
       this.filteredRecords = this.filteredRecords.filter(x =>
         new RegExp(value, "i").test(x.data[columnId])
       );
-      this.navigate(1);
+      // this.updatePagination(1);
     },
     numberFilter(value, columnId, type) {
       const numValue = parseFloat(value);
@@ -297,18 +284,17 @@ export default Vue.extend({
           return x.data[columnId] <= numValue;
         }
       });
-      this.navigate(1);
+      // this.updatePagination(1);
     },
     sort(column) {
-      column.data.sort_direction =
-        column.data.sort_direction === "asc" ? "desc" : "asc";
-      this.currentSort = column.data.id;
+      column.sort_direction = column.sort_direction === "asc" ? "desc" : "asc";
+      this.currentSort = column.id;
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
         function(e) {
-          return e.data[column.data.id];
+          return e.data[column.id];
         },
-        column.data.sort_direction
+        column.sort_direction
       );
       this.getData();
     },
@@ -317,15 +303,14 @@ export default Vue.extend({
       const end =
         (this.pagination.currentPage - 1) * this.pagination.limit +
         this.pagination.limit;
-      this.records = this.filteredRecords.slice(start, end || -1);
+
+      return this.filteredRecords.slice(start, end || -1);
     }
   }
 });
 </script>
 
 <style lang="scss">
-@import "@/styles/_variables.scss";
-
 .data-table-page {
   .filters {
     h2 {

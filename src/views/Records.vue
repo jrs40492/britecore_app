@@ -1,7 +1,7 @@
 <template>
   <div id="report-wrapper" class="grid grid-cell span-12-xs">
     <ActionBar :actions="actions"></ActionBar>
-    <DataTable :data="data"></DataTable>
+    <DataTable :columns="columns" :records="records" :options="options"></DataTable>
   </div>
 </template>
 
@@ -16,16 +16,23 @@ export default Vue.extend({
     DataTable,
     ActionBar
   },
+  created() {
+    this.$store.dispatch("records/getColumns", this.$route.params.reportId);
+    this.$store.dispatch("records/getRecords", this.$route.params.reportId);
+  },
+  computed: {
+    columns() {
+      return this.$store.state.records.columns;
+    },
+    records() {
+      return this.$store.state.records.records;
+    },
+    options() {
+      return this.$store.state.records.options;
+    }
+  },
   data() {
     return {
-      data: {
-        records: [],
-        columns: [],
-        options: {
-          canEdit: true,
-          canDelete: true
-        }
-      },
       actions: [
         {
           type: "back",
@@ -33,43 +40,6 @@ export default Vue.extend({
         }
       ]
     };
-  },
-  mounted() {
-    this.getColumns();
-    this.getRecords();
-  },
-  methods: {
-    getColumns() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .collection("columns")
-        .orderBy("order", "asc")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            this.data.columns.push({
-              id: doc.id,
-              data: doc.data()
-            });
-          });
-        });
-    },
-    getRecords() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .collection("records")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            this.data.records.push({
-              id: doc.id,
-              data: doc.data()
-            });
-          });
-        });
-    }
   }
 });
 </script>

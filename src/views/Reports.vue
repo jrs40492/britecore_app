@@ -1,7 +1,7 @@
 <template>
   <div id="reports" class="grid grid-cell span-12-xs">
     <ActionBar :actions="actions"></ActionBar>
-    <DataTable v-bind:data="data"></DataTable>
+    <DataTable :columns="columns" :records="records" :options="options"></DataTable>
   </div>
 </template>
 
@@ -16,48 +16,20 @@ export default Vue.extend({
     DataTable,
     ActionBar
   },
-  mounted() {
-    this.getReports();
+  created() {
+    this.$store.dispatch("reports/get");
+  },
+  computed: {
+    records() {
+      return this.$store.state.reports.records;
+    },
+    options() {
+      return this.$store.state.reports.options;
+    }
   },
   data() {
     return {
-      data: {
-        records: [],
-        columns: [
-          {
-            id: "id",
-            data: {
-              id: "id",
-              name: "ID",
-              visible: false
-            }
-          },
-          {
-            id: "name",
-            data: {
-              id: "name",
-              name: "Report",
-              type: "link",
-              visible: true,
-              canFilter: true
-            }
-          },
-          {
-            id: "createdOn",
-            data: {
-              id: "createdOn",
-              name: "Created",
-              type: "date",
-              visible: true,
-              canFilter: true
-            }
-          }
-        ],
-        options: {
-          canEdit: true,
-          canDelete: true
-        }
-      },
+      columns: this.$store.state.reports.columns,
       actions: [
         {
           type: "link",
@@ -69,21 +41,6 @@ export default Vue.extend({
         }
       ]
     };
-  },
-  methods: {
-    getReports() {
-      this.$store.state.db
-        .collection("reports")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            this.data.records.push({
-              id: doc.id,
-              data: doc.data()
-            });
-          });
-        });
-    }
   }
 });
 </script>

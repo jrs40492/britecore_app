@@ -133,7 +133,6 @@ export default Vue.extend({
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
-                console.log(settings);
                 let columnRef = reportsRef
                   .collection("columns")
                   .doc(settings.dbKey);

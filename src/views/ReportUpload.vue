@@ -53,7 +53,6 @@
 
 <script>
 import _ from "lodash";
-import uuidv4 from "uuid/v4";
 import Vue from "vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
@@ -120,7 +119,6 @@ export default Vue.extend({
       const batch = db.batch();
 
       const reportInfo = {
-        id: uuidv4(),
         name: reportTitle,
         createdOn: firebase.firestore.Timestamp.now(),
         settings: {
