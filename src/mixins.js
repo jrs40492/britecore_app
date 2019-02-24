@@ -12,16 +12,23 @@ Vue.mixin({
 
       return formatter.format(number);
     },
-    formatDate: (date) => {
+    formatDate: (date, forInput) => {
       if (!date) {
-        return null;
+        return date;
+      }
+      let format = 'MM/DD/YYYY, HH:mm:ss A';
+
+      if (forInput) {
+        format = 'YYYY-MM-DDTHH:mm:ss';
       }
 
-      if (typeof date === 'string') {
-        return moment(date).format('MM/DD/YYYY, HH:mm:ss A');
+      let newDate = date;
+
+      if (typeof date !== 'string') {
+        newDate = date.toDate();
       }
 
-      return date.toDate().toLocaleString();
+      return moment(newDate).format(format);
     },
   },
 });

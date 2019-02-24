@@ -85,6 +85,7 @@ export default Vue.extend({
       papa.parse(file, {
         delimiter: ",",
         header: true,
+        dynamicTyping: true,
         complete: results => {
           if (results.errors.length > 0) {
             // TODO: Implement error logging and display to user
@@ -149,7 +150,7 @@ export default Vue.extend({
             .then(() => {
               const reportInfo = {
                 name: reportTitle,
-                settings: {
+                options: {
                   canEdit,
                   canDelete
                 },

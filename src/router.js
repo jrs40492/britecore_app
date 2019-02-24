@@ -6,8 +6,8 @@ import ReportsView from './views/ReportsView.vue';
 import Reports from './views/Reports.vue';
 import ReportUpload from './views/ReportUpload.vue';
 import ReportEdit from './views/ReportEdit.vue';
-import RecordsView from './views/RecordsView.vue';
-import Records from './views/Records.vue';
+import ReportView from './views/ReportView.vue';
+import Report from './views/Report.vue';
 import RecordEdit from './views/RecordEdit.vue';
 
 Vue.use(Router);
@@ -32,10 +32,10 @@ export default new Router({
     },
     {
       path: ':reportId',
-      component: RecordsView,
+      component: ReportView,
       children: [{
         path: '',
-        component: Records,
+        component: Report,
       },
       {
         path: 'edit',

@@ -3,7 +3,8 @@ import Vuex from 'vuex';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import reports from './reports';
-import records from './records';
+import report from './report';
+import record from './record';
 
 const config = {
   apiKey: `${process.env.VUE_APP_FIRESTORE_API_KEY}`,
@@ -25,6 +26,7 @@ export default new Vuex.Store({
   state,
   modules: {
     reports,
-    records,
+    report,
+    record,
   },
 });

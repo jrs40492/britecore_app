@@ -11,7 +11,7 @@
         >
           <div class="text-input">
             <label for="reportTitle">Report Title</label>
-            <input type="text" name="reportTitle" id="reportTitle" :value="info.name">
+            <input type="text" name="reportTitle" id="reportTitle" :value="settings.name">
           </div>
           <div class="checkbox-input">
             <label for="canEdit">Data Editable?</label>
@@ -20,7 +20,7 @@
               name="canEdit"
               id="canEdit"
               data-type="bool"
-              :checked="info.settings.canEdit"
+              :checked="settings.options.canEdit"
             >
           </div>
           <div class="checkbox-input">
@@ -30,15 +30,15 @@
               name="canDelete"
               id="canDelete"
               data-type="bool"
-              :checked="info.settings.canDelete"
+              :checked="settings.options.canDelete"
             >
           </div>
           <ColumnOption
             v-for="(column, index) in columns"
             :key="index"
-            :field="column.data.id"
-            :data="column.data"
-            :dbKey="column.id"
+            :field="column.id"
+            :data="column"
+            :dbKey="column.uniqueId"
             :index="index"
           ></ColumnOption>
           <button type="submit" value="Save">Save</button>
@@ -64,8 +64,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      info: [],
-      columns: [],
       actions: [
         {
           type: "back",
@@ -75,8 +73,16 @@ export default Vue.extend({
     };
   },
   created() {
-    this.getInfo();
-    this.getColumns();
+    this.$store.dispatch("report/getSettings", this.$route.params.reportId);
+    this.$store.dispatch("report/getColumns", this.$route.params.reportId);
+  },
+  computed: {
+    columns() {
+      return this.$store.state.report.columns;
+    },
+    settings() {
+      return this.$store.state.report.settings;
+    }
   },
   methods: {
     processReportSettings(event) {
@@ -110,29 +116,31 @@ export default Vue.extend({
             });
           });
 
-          const finalColumns = [];
           promises
-            .then(columns => {
-              for (const key in columns) {
-                const settings = columns[key];
+            .then(cols => {
+              const columns = [];
+              for (const key in cols) {
+                const settings = cols[key];
                 settings.id = key;
                 settings.name = key;
-                finalColumns.push(settings);
+                columns.push(settings);
               }
-              return;
+              return columns;
             })
-            .then(() => {
+            .then(columns => {
               const reportInfo = {
                 name: reportTitle,
                 reportId: this.$route.params.reportId,
-                settings: {
+                options: {
                   canEdit,
                   canDelete
                 },
-                columns: finalColumns
+                columns
               };
 
-              this.$store.dispatch("reports/update", reportInfo);
+              this.$store.dispatch("report/update", reportInfo).then(() => {
+                this.$router.go(-1);
+              });
             });
         })
         .catch(err => {
@@ -175,36 +183,6 @@ export default Vue.extend({
 
         resolve(settings);
       });
-    },
-    getInfo(callback) {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .get()
-        .then(doc => {
-          if (doc.exists) {
-            this.info = doc.data();
-          } else {
-            // TODO: Properly handle error
-            console.log("Document doesn't exist");
-          }
-        });
-    },
-    getColumns() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .collection("columns")
-        .orderBy("order", "asc")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            this.columns.push({
-              id: doc.id,
-              data: doc.data()
-            });
-          });
-        });
     }
   }
 });

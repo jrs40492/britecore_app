@@ -17,18 +17,18 @@ export default Vue.extend({
     ActionBar
   },
   created() {
-    this.$store.dispatch("records/getColumns", this.$route.params.reportId);
-    this.$store.dispatch("records/getRecords", this.$route.params.reportId);
+    this.$store.dispatch("report/getColumns", this.$route.params.reportId);
+    this.$store.dispatch("report/getRecords", this.$route.params.reportId);
   },
   computed: {
     columns() {
-      return this.$store.state.records.columns;
+      return this.$store.state.report.columns;
     },
     records() {
-      return this.$store.state.records.records;
+      return this.$store.state.report.records;
     },
     options() {
-      return this.$store.state.records.options;
+      return this.$store.state.report.options;
     }
   },
   data() {
@@ -37,6 +37,14 @@ export default Vue.extend({
         {
           type: "back",
           align: "left"
+        },
+        {
+          type: "link",
+          link: "edit",
+          append: true,
+          align: "right",
+          text: "Edit",
+          icon: "edit"
         }
       ]
     };

@@ -6,17 +6,17 @@
       <div class="card-body">
         <div v-for="(column, index) in columns" :key="index">
           <div class="text-input">
-            <label :for="index">{{ column.data.name }}</label>
-            <input v-if="column.data.type === 'string'" type="text" v-model="data[column.data.id]">
+            <label :for="index">{{ column.name }}</label>
+            <input v-if="column.type === 'string'" type="text" v-model="record[column.id]">
             <input
-              v-else-if="column.data.type === 'date'"
+              v-else-if="column.type === 'date'"
               type="datetime-local"
-              :value="formatDate(data[column.data.id])"
+              :value="formatDate(record[column.id], true)"
             >
             <input
-              v-else-if="column.data.type === 'currency' || column.data.type === 'number'"
+              v-else-if="column.type === 'currency' || column.type === 'number'"
               type="number"
-              v-model.number="data[column.data.id]"
+              v-model.number="record[column.id]"
             >
           </div>
         </div>
@@ -39,8 +39,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      columns: [],
-      data: [],
       actions: [
         {
           type: "back",
@@ -50,63 +48,28 @@ export default Vue.extend({
     };
   },
   created() {
-    this.getColumns();
-    this.getData();
+    this.$store.dispatch("report/getColumns", this.$route.params.reportId);
+    this.$store.dispatch("record/getRecord", {
+      reportId: this.$route.params.reportId,
+      recordId: this.$route.params.recordId
+    });
+  },
+  computed: {
+    columns() {
+      return this.$store.state.report.columns;
+    },
+    record() {
+      return this.$store.state.record.record;
+    }
   },
   methods: {
-    getReportSettings() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            this.columns.push({
-              id: doc.id,
-              data: doc.data()
-            });
-          });
-        });
-    },
-    getColumns() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .collection("columns")
-        .orderBy("order", "asc")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            this.columns.push({
-              id: doc.id,
-              data: doc.data()
-            });
-          });
-        });
-    },
-    getData() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .collection("records")
-        .doc(this.$route.params.recordId)
-        .get()
-        .then(doc => {
-          if (doc.exists) {
-            this.data = doc.data();
-          } else {
-            // TODO: Properly handle error
-            console.log("Document doesn't exist");
-          }
-        });
-    },
     save() {
-      this.$store.state.db
-        .collection("reports")
-        .doc(this.$route.params.reportId)
-        .collection("records")
-        .doc(this.$route.params.recordId)
-        .set(this.data, { merge: true })
+      this.$store
+        .dispatch("record/update", {
+          reportId: this.$route.params.reportId,
+          recordId: this.$route.params.recordId,
+          record: this.record
+        })
         .then(this.$router.go(-1));
     }
   }
