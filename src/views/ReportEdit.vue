@@ -91,23 +91,6 @@ export default Vue.extend({
         return;
       }
 
-      const db = this.$store.state.db;
-      const reportsRef = db
-        .collection("reports")
-        .doc(this.$route.params.reportId);
-      const batch = db.batch();
-
-      const reportInfo = {
-        name: reportTitle,
-        updatedOn: firebase.firestore.Timestamp.now(),
-        settings: {
-          canEdit,
-          canDelete
-        }
-      };
-
-      batch.set(reportsRef, reportInfo, { merge: true });
-
       Promise.all([...elements].map(this.processColumnSetting))
         .then(columnSettings => {
           const promises = new Promise((resolve, reject) => {
@@ -127,21 +110,29 @@ export default Vue.extend({
             });
           });
 
+          const finalColumns = [];
           promises
             .then(columns => {
               for (const key in columns) {
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
-                let columnRef = reportsRef
-                  .collection("columns")
-                  .doc(settings.dbKey);
-                batch.set(columnRef, settings);
+                finalColumns.push(settings);
               }
               return;
             })
             .then(() => {
-              batch.commit();
+              const reportInfo = {
+                name: reportTitle,
+                reportId: this.$route.params.reportId,
+                settings: {
+                  canEdit,
+                  canDelete
+                },
+                columns: finalColumns
+              };
+
+              this.$store.dispatch("reports/update", reportInfo);
             });
         })
         .catch(err => {

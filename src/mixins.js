@@ -18,7 +18,7 @@ Vue.mixin({
       }
 
       if (typeof date === 'string') {
-        return moment(date).format('YYYY-MM-DDTHH:mm');
+        return moment(date).format('MM/DD/YYYY, HH:mm:ss A');
       }
 
       return date.toDate().toLocaleString();

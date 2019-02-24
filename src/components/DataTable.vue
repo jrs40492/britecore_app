@@ -89,7 +89,7 @@
             <template v-for="column in displayColumns">
               <td v-if="column.type === 'date'" :key="column.id">{{ formatDate(record[column.id]) }}</td>
               <td v-else-if="column.type ==='link'" :key="column.id">
-                <router-link :to="record.id" append>{{ record[column.id] }}</router-link>
+                <router-link :to="record.uniqueId" append>{{ record[column.id] }}</router-link>
               </td>
               <td
                 v-else-if="column.type === 'currency'"
@@ -100,7 +100,7 @@
               <td v-else :key="column.id">{{ record[column.id] }}</td>
             </template>
             <td v-if="options.canEdit" class="icon-cell">
-              <router-link :to="record.id + '/edit'" append>
+              <router-link :to="record.uniqueId + '/edit'" append>
                 <i class="material-icons">edit</i>
               </router-link>
             </td>
@@ -143,8 +143,8 @@ export default Vue.extend({
   props: ["columns", "records", "options"],
   data() {
     return {
-      // filteredRecords: [],
       activeFilters: {},
+      filteredRecords: [],
       currentSort: "",
       pagination: {
         limit: 10,
@@ -157,13 +157,16 @@ export default Vue.extend({
     };
   },
   computed: {
-    filteredRecords() {
+    allRecords() {
+      this.filteredRecords = this.records;
       return this.records;
     },
     displayColumns() {
       return _.filter(this.columns, "visible");
     },
     displayRecords() {
+      this.allRecords;
+
       return this.updatePagination();
     }
   },
@@ -261,16 +264,16 @@ export default Vue.extend({
       const filterDate = new Date(value).setHours(0, 0, 0, 0);
       this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === "start") {
-          return new Date(x.data[columnId]).setHours(0, 0, 0, 0) >= filterDate;
+          return new Date(x[columnId]).setHours(0, 0, 0, 0) >= filterDate;
         } else {
-          return new Date(x.data[columnId]).setHours(0, 0, 0, 0) <= filterDate;
+          return new Date(x[columnId]).setHours(0, 0, 0, 0) <= filterDate;
         }
       });
       // this.updatePagination(1);
     },
     textFilter(value, columnId) {
       this.filteredRecords = this.filteredRecords.filter(x =>
-        new RegExp(value, "i").test(x.data[columnId])
+        new RegExp(value, "i").test(x[columnId])
       );
       // this.updatePagination(1);
     },
@@ -279,9 +282,9 @@ export default Vue.extend({
 
       this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === "min") {
-          return x.data[columnId] >= numValue;
+          return x[columnId] >= numValue;
         } else {
-          return x.data[columnId] <= numValue;
+          return x[columnId] <= numValue;
         }
       });
       // this.updatePagination(1);
@@ -292,7 +295,7 @@ export default Vue.extend({
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
         function(e) {
-          return e.data[column.id];
+          return e[column.id];
         },
         column.sort_direction
       );

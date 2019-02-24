@@ -17,11 +17,12 @@ const mutations = {
       column,
     },
   ) {
+    console.log(state.columns);
     if (!lodash.find(state.columns, {
-      id: column.id,
+      uniqueId: column.id,
     })) {
       state.columns.push({
-        id: column.id,
+        uniqueId: column.id,
         ...column.data(),
       });
     }
@@ -32,10 +33,10 @@ const mutations = {
     },
   ) {
     if (!lodash.find(state.records, {
-      id: record.id,
+      uniqueId: record.id,
     })) {
       state.records.push({
-        id: record.id,
+        uniqueId: record.id,
         ...record.data(),
       });
     }

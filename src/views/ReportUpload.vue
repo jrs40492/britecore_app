@@ -107,32 +107,14 @@ export default Vue.extend({
 
       // Get the report title out of the elements
       const reportTitle = elements.namedItem("reportTitle").value;
+
+      // Get report settings
       const canEdit = elements.namedItem("canEdit").checked;
       const canDelete = elements.namedItem("canDelete").checked;
 
       if (!reportTitle) {
         return;
       }
-
-      const db = this.$store.state.db;
-      const reportsRef = db.collection("reports").doc();
-      const batch = db.batch();
-
-      const reportInfo = {
-        name: reportTitle,
-        createdOn: firebase.firestore.Timestamp.now(),
-        settings: {
-          canEdit,
-          canDelete
-        }
-      };
-
-      batch.set(reportsRef, reportInfo);
-
-      fileData.forEach(record => {
-        let recordRef = reportsRef.collection("records").doc();
-        batch.set(recordRef, record);
-      });
 
       Promise.all([...elements].map(this.processColumnSetting))
         .then(columnSettings => {
@@ -153,19 +135,29 @@ export default Vue.extend({
             });
           });
 
+          const finalColumns = [];
           promises
             .then(columns => {
               for (const key in columns) {
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
-                let columnRef = reportsRef.collection("columns").doc();
-                batch.set(columnRef, settings);
+                finalColumns.push(settings);
               }
               return;
             })
             .then(() => {
-              batch.commit();
+              const reportInfo = {
+                name: reportTitle,
+                settings: {
+                  canEdit,
+                  canDelete
+                },
+                records: fileData,
+                columns: finalColumns
+              };
+
+              this.$store.dispatch("reports/create", reportInfo);
             });
         })
         .catch(err => {
