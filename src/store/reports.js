@@ -4,30 +4,6 @@ import 'firebase/firestore';
 
 const data = {
   records: [],
-  columns: [{
-    id: 'id',
-    name: 'ID',
-    visible: false,
-  },
-  {
-    id: 'name',
-    name: 'Report',
-    type: 'link',
-    visible: true,
-    canFilter: true,
-  },
-  {
-    id: 'createdOn',
-    name: 'Created',
-    type: 'date',
-    visible: true,
-    canFilter: true,
-  },
-  ],
-  options: {
-    canEdit: true,
-    canDelete: false,
-  },
   report: {
     records: [],
     columns: [],

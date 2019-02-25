@@ -1,0 +1,53 @@
+{
+  "name": "Jacob Swanson",
+  "email": "jrs40492@gmail.com",
+  "website": "http://jacobrswanson.com",
+  "github": "https://github.com/jrs40492",
+  "linkedIn": "https://linkedin.com/in/jacob-r-swanson",
+  "stackoverflow": "https://stackoverflow.com/users/1383491/jswanson",
+  "currentLocation": "Chautauqua, NY",
+  "birthday": "04/04/1992",
+  "age": "26",
+  "yearsOfExperience": 8,
+  "projects": [
+    "https://ufsports.com",
+    "http://jacobrswanson.com"
+  ],
+  "skills": {
+    "frontend": [
+      "HTML5",
+      "CSS3/SASS",
+      "JavaScript",
+      "jQuery",
+      "Bootstrap"
+    ],
+    "backend": [
+      "Node.js",
+      "PHP",
+      "MySQL",
+      "T-SQL",
+      "Oracle SQL",
+      "C#",
+      ".NET",
+      "MongoDB"
+    ],
+    "other": [
+      "GIT",
+      "JIRA",
+      "Digital Ocean",
+      "Firestore",
+      "Service Now"
+    ]
+  },
+  "hobbies": [
+    "Video games",
+    "Football",
+    "Basketball",
+    "Golf",
+    "Tennis",
+    "Researching technology"
+  ],
+  "goals": [
+    ""
+  ]
+}

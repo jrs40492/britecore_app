@@ -22,14 +22,36 @@ export default Vue.extend({
   computed: {
     records() {
       return this.$store.state.reports.records;
-    },
-    options() {
-      return this.$store.state.reports.options;
     }
   },
   data() {
     return {
       columns: this.$store.state.reports.columns,
+      columns: [
+        {
+          id: "id",
+          name: "ID",
+          visible: false
+        },
+        {
+          id: "name",
+          name: "Report",
+          type: "link",
+          visible: true,
+          canFilter: true
+        },
+        {
+          id: "createdOn",
+          name: "Created",
+          type: "date",
+          visible: true,
+          canFilter: true
+        }
+      ],
+      options: {
+        canEdit: true,
+        canDelete: false
+      },
       actions: [
         {
           type: "link",
