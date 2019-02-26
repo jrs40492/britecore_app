@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const state = {
   record: [],
 };
@@ -39,7 +40,7 @@ const actions = {
       });
   },
   async update({
-    _,
+    commit,
     rootState,
   }, {
     reportId,

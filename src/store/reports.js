@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import lodash from 'lodash';
 import firebase from 'firebase/app';
 import 'firebase/firestore';

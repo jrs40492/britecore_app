@@ -15,7 +15,7 @@
                 @input="
                   applyFilter('number', $event.target.value, column.id, 'min')
                 "
-              />
+              >
             </div>
             <div class="number-input">
               <label :for="column.id + 'Max'">Max {{ column.name }}:</label>
@@ -27,14 +27,12 @@
                 @input="
                   applyFilter('number', $event.target.value, column.id, 'max')
                 "
-              />
+              >
             </div>
           </div>
           <div v-else-if="column.type === 'date'">
             <div class="date-input">
-              <label :for="column.id + 'StartDate'"
-                >Start {{ column.name }}:</label
-              >
+              <label :for="column.id + 'StartDate'">Start {{ column.name }}:</label>
               <input
                 type="date"
                 :id="column.id + 'StartDate'"
@@ -43,7 +41,7 @@
                   applyFilter('date', $event.target.value, column.id, 'start')
                 "
                 :v-model="column.id"
-              />
+              >
             </div>
             <div class="date-input">
               <label :for="column.id + 'EndDate'">End {{ column.name }}:</label>
@@ -55,7 +53,7 @@
                   applyFilter('date', $event.target.value, column.id, 'end')
                 "
                 :v-model="column.id"
-              />
+              >
             </div>
           </div>
           <div v-else>
@@ -67,7 +65,7 @@
                 :placeholder="column.name"
                 @input="applyFilter('text', $event.target.value, column.id)"
                 :v-model="column.id"
-              />
+              >
             </div>
           </div>
         </div>
@@ -86,9 +84,7 @@
             >
               {{ column.name }}
               <template v-if="currentSort === column.name">
-                <i class="material-icons" v-if="column.sort_direction === 'asc'"
-                  >arrow_drop_up</i
-                >
+                <i class="material-icons" v-if="column.sortDirection === 'asc'">arrow_drop_up</i>
                 <i class="material-icons" v-else>arrow_drop_down</i>
               </template>
             </th>
@@ -99,22 +95,20 @@
         <tbody v-if="displayRecords.length > 0">
           <tr v-for="(record, index) in displayRecords" :key="index">
             <template v-for="column in displayColumns">
-              <td v-if="column.type === 'date'" :key="column.id">
-                {{ formatDate(record[column.id]) }}
-              </td>
+              <td v-if="column.type === 'date'" :key="column.id">{{ formatDate(record[column.id]) }}</td>
               <td v-else-if="column.type === 'link'" :key="column.id">
-                <router-link :to="record.uniqueId" append>{{
+                <router-link :to="record.uniqueId" append>
+                  {{
                   record[column.id]
-                }}</router-link>
+                  }}
+                </router-link>
               </td>
               <td
                 v-else-if="column.type === 'currency'"
                 :class="record[column.id] < 0 ? 'negative' : ''"
                 class="number"
                 :key="column.id"
-              >
-                {{ formatCurrency(record[column.id]) }}
-              </td>
+              >{{ formatCurrency(record[column.id]) }}</td>
               <td v-else :key="column.id">{{ record[column.id] }}</td>
             </template>
             <td v-if="settings.options.canEdit" class="icon-cell">
@@ -134,30 +128,21 @@
         </tbody>
       </table>
       <div class="pagination" v-if="pagination.totalPages > 1">
-        <div
-          :class="pagination.currentPage === 1 ? 'active' : ''"
-          @click="updatePagination(1)"
-        >
-          1
-        </div>
+        <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="updatePagination(1)">1</div>
         <div v-if="pagination.startEllipsis" class="ellipsis start">...</div>
         <div
           v-for="page in pagination.range"
           :key="page"
           :class="pagination.currentPage === page ? 'active' : ''"
           @click="updatePagination(page)"
-        >
-          {{ page }}
-        </div>
+        >{{ page }}</div>
         <div v-if="pagination.endEllipsis" class="ellipsis end">...</div>
         <div
           :class="
             pagination.currentPage === pagination.totalPages ? 'active' : ''
           "
           @click="updatePagination(pagination.totalPages)"
-        >
-          {{ pagination.totalPages }}
-        </div>
+        >{{ pagination.totalPages }}</div>
       </div>
     </div>
   </div>
@@ -173,7 +158,6 @@ export default Vue.extend({
   data() {
     return {
       activeFilters: {},
-      filteredRecords: [],
       currentSort: '',
       pagination: {
         limit: 10,
@@ -187,8 +171,10 @@ export default Vue.extend({
   },
   computed: {
     allRecords() {
-      this.filteredRecords = this.records;
       return this.records;
+    },
+    filteredRecords() {
+      return this.allRecords;
     },
     displayColumns() {
       return _.filter(this.columns, 'visible');
@@ -311,12 +297,12 @@ export default Vue.extend({
       // this.updatePagination(1);
     },
     sort(column) {
-      column.sort_direction = column.sort_direction === 'asc' ? 'desc' : 'asc';
+      column.sortDirection = column.sortDirection === 'asc' ? 'desc' : 'asc';
       this.currentSort = column.id;
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
         e => e[column.id],
-        column.sort_direction,
+        column.sortDirection,
       );
       this.getData();
     },

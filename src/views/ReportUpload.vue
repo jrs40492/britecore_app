@@ -5,8 +5,8 @@
       <div class="card-header">Instructions:</div>
       <div class="card-body">
         <p>
-          Click the button below to upload a CSV file. The file must contain headers in the first row in order
-          to function properly.
+          Click the button below to upload a CSV file. The file must contain headers in the
+          first row in order to function properly.
         </p>
       </div>
       <div class="card-footer">
@@ -19,12 +19,12 @@
     <div id="column-options-wrapper" class="card grid-cell span-12-xs span-6-md">
       <div class="card-header">Report Settings</div>
       <div class="card-body">
-        <h3 class="header">General</h3>
         <form
           @submit.prevent="processReportSettings"
           id="column-options-form"
           v-if="columns.length > 0"
         >
+          <h3 class="header">General</h3>
           <div class="text-input">
             <label for="reportTitle">Report Title *</label>
             <input type="text" name="reportTitle" id="reportTitle" placeholder="Title">
@@ -52,10 +52,7 @@
 </template>
 
 <script>
-import _ from 'lodash';
 import Vue from 'vue';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
 import papa from 'papaparse';
 import ColumnOption from '@/components/ColumnOption.vue';
 import ActionBar from '@/components/ActionBar.vue';
@@ -119,7 +116,7 @@ export default Vue.extend({
 
       Promise.all([...elements].map(this.processColumnSetting))
         .then((columnSettings) => {
-          const promises = new Promise((resolve, reject) => {
+          const promises = new Promise((resolve) => {
             const columns = [];
             const count = columnSettings.length;
 
@@ -136,18 +133,20 @@ export default Vue.extend({
             });
           });
 
-          const finalColumns = [];
           promises
             .then((columns) => {
-              console.log(columns);
-              for (const key in columns) {
+              const finalColumns = [];
+              const keys = Object.keys(columns);
+              keys.forEach((key) => {
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
                 finalColumns.push(settings);
-              }
+              });
+
+              return finalColumns;
             })
-            .then(() => {
+            .then((finalColumns) => {
               const reportInfo = {
                 name: reportTitle,
                 options: {
@@ -158,7 +157,7 @@ export default Vue.extend({
                 columns: finalColumns,
               };
 
-              this.$store.dispatch('reports/create', reportInfo);
+              this.$store.dispatch('reports/createReport', reportInfo);
             });
         })
         .catch((err) => {
@@ -190,6 +189,7 @@ export default Vue.extend({
             ({ value } = element);
             break;
         }
+        console.log(field, value);
 
         const settings = {
           field,

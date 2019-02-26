@@ -50,7 +50,7 @@
         :id="field + 'Visible'"
         :data-field="field"
         data-type="bool"
-        :checked="data.visible"
+        :checked="data.visible !== false ? true : false"
         :data-db-key="dbKey"
       >
     </div>
@@ -62,7 +62,7 @@
         :id="field + 'Filter'"
         :data-field="field"
         data-type="bool"
-        :checked="data.canFilter"
+        :checked="data.canFilter !== false ? true : false"
         :data-db-key="dbKey"
       >
     </div>
@@ -75,7 +75,10 @@ import Vue from 'vue';
 export default Vue.extend({
   name: 'ColumnOption',
   props: {
-    field: String, index: Number, data: Object, dbKey: String,
+    field: String,
+    index: Number,
+    data: Object,
+    dbKey: String,
   },
   data() {
     return {

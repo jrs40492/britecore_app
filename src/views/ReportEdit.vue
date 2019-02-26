@@ -4,12 +4,12 @@
     <div id="column-options-wrapper" class="card grid-cell span-12-xs">
       <div class="card-header">Report Settings</div>
       <div class="card-body">
-        <h3 class="header">General</h3>
         <form
           @submit.prevent="processReportSettings"
           id="column-options-form"
           v-if="columns.length > 0"
         >
+        <h3 class="header">General</h3>
           <div class="text-input">
             <label for="reportTitle">Report Title</label>
             <input type="text" name="reportTitle" id="reportTitle" :value="settings.name">
@@ -50,10 +50,7 @@
 </template>
 
 <script>
-import _ from 'lodash';
 import Vue from 'vue';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
 import ColumnOption from '@/components/ColumnOption.vue';
 import ActionBar from '@/components/ActionBar.vue';
 
@@ -106,10 +103,10 @@ export default Vue.extend({
 
       Promise.all([...elements].map(this.processColumnSetting))
         .then((columnSettings) => {
-          const promises = new Promise((resolve, reject) => {
+          const promises = new Promise((resolve) => {
             const columns = [];
 
-            columnSettings.forEach((setting, index) => {
+            columnSettings.forEach((setting) => {
               if (setting) {
                 if (!columns[setting.field]) {
                   columns[setting.field] = {};
@@ -126,12 +123,13 @@ export default Vue.extend({
           promises
             .then((cols) => {
               const columns = [];
-              for (const key in cols) {
+              const keys = Object.keys(cols);
+              keys.forEach((key) => {
                 const settings = cols[key];
                 settings.id = key;
                 settings.name = key;
                 columns.push(settings);
-              }
+              });
               return columns;
             })
             .then((columns) => {
@@ -158,7 +156,7 @@ export default Vue.extend({
         });
     },
     processColumnSetting(element) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         // Get the field/column name to group settings based on column
         const field = element.getAttribute('data-field');
 
@@ -179,7 +177,7 @@ export default Vue.extend({
             value = element.checked;
             break;
           default:
-            value = element.value;
+            ({ value } = element);
             break;
         }
 
