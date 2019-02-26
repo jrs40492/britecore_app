@@ -7,9 +7,11 @@ const data = {
   report: {
     records: [],
     columns: [],
-    options: {
-      canEdit: true,
-      canDelete: false,
+    settings: {
+      options: {
+        canEdit: true,
+        canDelete: false,
+      },
     },
   },
 };

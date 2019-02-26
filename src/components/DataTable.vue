@@ -12,8 +12,10 @@
                 placeholder="0"
                 :id="column.id + 'Min'"
                 :v-model="column.id"
-                @input="applyFilter('number', $event.target.value, column.id, 'min')"
-              >
+                @input="
+                  applyFilter('number', $event.target.value, column.id, 'min')
+                "
+              />
             </div>
             <div class="number-input">
               <label :for="column.id + 'Max'">Max {{ column.name }}:</label>
@@ -22,20 +24,26 @@
                 placeholder="1000"
                 :id="column.id + 'Max'"
                 :v-model="column.id"
-                @input="applyFilter('number', $event.target.value, column.id, 'max')"
-              >
+                @input="
+                  applyFilter('number', $event.target.value, column.id, 'max')
+                "
+              />
             </div>
           </div>
           <div v-else-if="column.type === 'date'">
             <div class="date-input">
-              <label :for="column.id + 'StartDate'">Start {{ column.name }}:</label>
+              <label :for="column.id + 'StartDate'"
+                >Start {{ column.name }}:</label
+              >
               <input
                 type="date"
                 :id="column.id + 'StartDate'"
                 name="Start Date"
-                @input="applyFilter('date', $event.target.value, column.id, 'start')"
+                @input="
+                  applyFilter('date', $event.target.value, column.id, 'start')
+                "
                 :v-model="column.id"
-              >
+              />
             </div>
             <div class="date-input">
               <label :for="column.id + 'EndDate'">End {{ column.name }}:</label>
@@ -43,9 +51,11 @@
                 type="date"
                 :id="column.id + 'EndDate'"
                 name="End Date"
-                @input="applyFilter('date', $event.target.value, column.id, 'end')"
+                @input="
+                  applyFilter('date', $event.target.value, column.id, 'end')
+                "
                 :v-model="column.id"
-              >
+              />
             </div>
           </div>
           <div v-else>
@@ -57,7 +67,7 @@
                 :placeholder="column.name"
                 @input="applyFilter('text', $event.target.value, column.id)"
                 :v-model="column.id"
-              >
+              />
             </div>
           </div>
         </div>
@@ -76,35 +86,43 @@
             >
               {{ column.name }}
               <template v-if="currentSort === column.name">
-                <i class="material-icons" v-if="column.sort_direction === 'asc'">arrow_drop_up</i>
+                <i class="material-icons" v-if="column.sort_direction === 'asc'"
+                  >arrow_drop_up</i
+                >
                 <i class="material-icons" v-else>arrow_drop_down</i>
               </template>
             </th>
-            <th v-if="options.canEdit">Edit</th>
-            <th v-if="options.canDelete">Delete</th>
+            <th v-if="settings.options.canEdit">Edit</th>
+            <th v-if="settings.options.canDelete">Delete</th>
           </tr>
         </thead>
         <tbody v-if="displayRecords.length > 0">
           <tr v-for="(record, index) in displayRecords" :key="index">
             <template v-for="column in displayColumns">
-              <td v-if="column.type === 'date'" :key="column.id">{{ formatDate(record[column.id]) }}</td>
-              <td v-else-if="column.type ==='link'" :key="column.id">
-                <router-link :to="record.uniqueId" append>{{ record[column.id] }}</router-link>
+              <td v-if="column.type === 'date'" :key="column.id">
+                {{ formatDate(record[column.id]) }}
+              </td>
+              <td v-else-if="column.type === 'link'" :key="column.id">
+                <router-link :to="record.uniqueId" append>{{
+                  record[column.id]
+                }}</router-link>
               </td>
               <td
                 v-else-if="column.type === 'currency'"
                 :class="record[column.id] < 0 ? 'negative' : ''"
                 class="number"
                 :key="column.id"
-              >{{ formatCurrency(record[column.id]) }}</td>
+              >
+                {{ formatCurrency(record[column.id]) }}
+              </td>
               <td v-else :key="column.id">{{ record[column.id] }}</td>
             </template>
-            <td v-if="options.canEdit" class="icon-cell">
+            <td v-if="settings.options.canEdit" class="icon-cell">
               <router-link :to="record.uniqueId + '/edit'" append>
                 <i class="material-icons">edit</i>
               </router-link>
             </td>
-            <td v-if="options.canDelete" class="icon-cell">
+            <td v-if="settings.options.canDelete" class="icon-cell">
               <i class="material-icons delete">delete</i>
             </td>
           </tr>
@@ -116,44 +134,55 @@
         </tbody>
       </table>
       <div class="pagination" v-if="pagination.totalPages > 1">
-        <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="updatePagination(1)">1</div>
+        <div
+          :class="pagination.currentPage === 1 ? 'active' : ''"
+          @click="updatePagination(1)"
+        >
+          1
+        </div>
         <div v-if="pagination.startEllipsis" class="ellipsis start">...</div>
         <div
           v-for="page in pagination.range"
           :key="page"
           :class="pagination.currentPage === page ? 'active' : ''"
           @click="updatePagination(page)"
-        >{{ page }}</div>
+        >
+          {{ page }}
+        </div>
         <div v-if="pagination.endEllipsis" class="ellipsis end">...</div>
         <div
-          :class="pagination.currentPage === pagination.totalPages ? 'active' : ''"
+          :class="
+            pagination.currentPage === pagination.totalPages ? 'active' : ''
+          "
           @click="updatePagination(pagination.totalPages)"
-        >{{ pagination.totalPages }}</div>
+        >
+          {{ pagination.totalPages }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import _ from "lodash";
-import Vue from "vue";
+import _ from 'lodash';
+import Vue from 'vue';
 
 export default Vue.extend({
-  name: "DataTable",
-  props: ["columns", "records", "options"],
+  name: 'DataTable',
+  props: ['columns', 'records', 'settings'],
   data() {
     return {
       activeFilters: {},
       filteredRecords: [],
-      currentSort: "",
+      currentSort: '',
       pagination: {
         limit: 10,
         currentPage: 1,
         totalPages: 0,
         startEllipsis: false,
         endEllipsis: false,
-        range: _.range(1, 1)
-      }
+        range: _.range(1, 1),
+      },
     };
   },
   computed: {
@@ -162,13 +191,13 @@ export default Vue.extend({
       return this.records;
     },
     displayColumns() {
-      return _.filter(this.columns, "visible");
+      return _.filter(this.columns, 'visible');
     },
     displayRecords() {
       this.allRecords;
 
       return this.updatePagination();
-    }
+    },
   },
   methods: {
     updatePagination(page) {
@@ -181,7 +210,7 @@ export default Vue.extend({
 
       this.pagination.limit = 10;
       this.pagination.totalPages = Math.ceil(
-        this.filteredRecords.length / this.pagination.limit
+        this.filteredRecords.length / this.pagination.limit,
       );
 
       let start = 2;
@@ -204,16 +233,12 @@ export default Vue.extend({
 
       return this.getData();
     },
-    applyFilter(type, value, id, version = "") {
+    applyFilter(type, value, id, version = '') {
       // Generate unique ID to track active filters
       const uniqueId = `${id}${type}${version}`;
 
       // Check if the filter already exists
-      if (
-        _.find(this.activeFilters, function(x, index) {
-          return index === uniqueId;
-        })
-      ) {
+      if (_.find(this.activeFilters, (x, index) => index === uniqueId)) {
         if (!value) {
           // Value was cleared so remove filter
           _.unset(this.activeFilters, uniqueId);
@@ -227,7 +252,7 @@ export default Vue.extend({
           type,
           value,
           columnId: id,
-          version
+          version,
         };
       }
 
@@ -243,16 +268,16 @@ export default Vue.extend({
       }
 
       // Loop through all active filters to get data set
-      filterKeys.forEach(key => {
+      filterKeys.forEach((key) => {
         const filter = this.activeFilters[key];
         switch (filter.type) {
-          case "date":
+          case 'date':
             this.dateFilter(filter.value, filter.columnId, filter.version);
             break;
-          case "text":
+          case 'text':
             this.textFilter(filter.value, filter.columnId);
             break;
-          case "number":
+          case 'number':
             this.numberFilter(filter.value, filter.columnId, filter.version);
             break;
           default:
@@ -262,54 +287,47 @@ export default Vue.extend({
     },
     dateFilter(value, columnId, type) {
       const filterDate = new Date(value).setHours(0, 0, 0, 0);
-      this.filteredRecords = this.filteredRecords.filter(x => {
-        if (type === "start") {
+      this.filteredRecords = this.filteredRecords.filter((x) => {
+        if (type === 'start') {
           return new Date(x[columnId]).setHours(0, 0, 0, 0) >= filterDate;
-        } else {
-          return new Date(x[columnId]).setHours(0, 0, 0, 0) <= filterDate;
         }
+        return new Date(x[columnId]).setHours(0, 0, 0, 0) <= filterDate;
       });
       // this.updatePagination(1);
     },
     textFilter(value, columnId) {
-      this.filteredRecords = this.filteredRecords.filter(x =>
-        new RegExp(value, "i").test(x[columnId])
-      );
+      this.filteredRecords = this.filteredRecords.filter(x => new RegExp(value, 'i').test(x[columnId]));
       // this.updatePagination(1);
     },
     numberFilter(value, columnId, type) {
       const numValue = parseFloat(value);
 
-      this.filteredRecords = this.filteredRecords.filter(x => {
-        if (type === "min") {
+      this.filteredRecords = this.filteredRecords.filter((x) => {
+        if (type === 'min') {
           return x[columnId] >= numValue;
-        } else {
-          return x[columnId] <= numValue;
         }
+        return x[columnId] <= numValue;
       });
       // this.updatePagination(1);
     },
     sort(column) {
-      column.sort_direction = column.sort_direction === "asc" ? "desc" : "asc";
+      column.sort_direction = column.sort_direction === 'asc' ? 'desc' : 'asc';
       this.currentSort = column.id;
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
-        function(e) {
-          return e[column.id];
-        },
-        column.sort_direction
+        e => e[column.id],
+        column.sort_direction,
       );
       this.getData();
     },
     getData() {
       const start = (this.pagination.currentPage - 1) * this.pagination.limit;
-      const end =
-        (this.pagination.currentPage - 1) * this.pagination.limit +
-        this.pagination.limit;
+      const end = (this.pagination.currentPage - 1) * this.pagination.limit
+        + this.pagination.limit;
 
       return this.filteredRecords.slice(start, end || -1);
-    }
-  }
+    },
+  },
 });
 </script>
 

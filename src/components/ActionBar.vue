@@ -30,13 +30,13 @@
 
 <script>
 export default {
-  name: "actionbar",
-  props: ["actions"],
+  name: 'actionbar',
+  props: ['actions'],
   methods: {
     back() {
       this.$router.go(-1);
-    }
-  }
+    },
+  },
 };
 </script>
 

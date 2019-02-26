@@ -70,30 +70,32 @@
 </template>
 
 <script>
-import Vue from "vue";
+import Vue from 'vue';
 
 export default Vue.extend({
-  name: "ColumnOption",
-  props: { field: String, index: Number, data: Object, dbKey: String },
+  name: 'ColumnOption',
+  props: {
+    field: String, index: Number, data: Object, dbKey: String,
+  },
   data() {
     return {
       typeOptions: [
-        { value: "string", title: "String" },
+        { value: 'string', title: 'String' },
         {
-          value: "date",
-          title: "Date"
+          value: 'date',
+          title: 'Date',
         },
         {
-          value: "number",
-          title: "Number"
+          value: 'number',
+          title: 'Number',
         },
         {
-          value: "currency",
-          title: "Currency"
-        }
-      ]
+          value: 'currency',
+          title: 'Currency',
+        },
+      ],
     };
-  }
+  },
 });
 </script>
 
@@ -106,6 +108,7 @@ export default Vue.extend({
 
   .field-name {
     text-align: center;
+    color: $primary-color;
   }
 
   .text-input,
@@ -118,4 +121,3 @@ export default Vue.extend({
   }
 }
 </style>
-

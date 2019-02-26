@@ -16,9 +16,14 @@
     font-size: 1.2em;
   }
 
-  // .card-body {
-
-  // }
+  .card-body {
+    .card-body-header {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: $primary-color;
+      padding: 10px 0 0 0;
+    }
+  }
 
   .card-footer {
     border-top: 1px solid $border;

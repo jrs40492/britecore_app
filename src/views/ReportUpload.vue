@@ -19,14 +19,14 @@
     <div id="column-options-wrapper" class="card grid-cell span-12-xs span-6-md">
       <div class="card-header">Report Settings</div>
       <div class="card-body">
+        <h3 class="header">General</h3>
         <form
           @submit.prevent="processReportSettings"
           id="column-options-form"
           v-if="columns.length > 0"
         >
-          <h3 class="header">General</h3>
           <div class="text-input">
-            <label for="reportTitle">Report Title</label>
+            <label for="reportTitle">Report Title *</label>
             <input type="text" name="reportTitle" id="reportTitle" placeholder="Title">
           </div>
           <div class="checkbox-input">
@@ -52,19 +52,19 @@
 </template>
 
 <script>
-import _ from "lodash";
-import Vue from "vue";
-import firebase from "firebase/app";
-import "firebase/firestore";
-import papa from "papaparse";
-import ColumnOption from "@/components/ColumnOption.vue";
-import ActionBar from "@/components/ActionBar.vue";
+import _ from 'lodash';
+import Vue from 'vue';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import papa from 'papaparse';
+import ColumnOption from '@/components/ColumnOption.vue';
+import ActionBar from '@/components/ActionBar.vue';
 
 export default Vue.extend({
-  name: "reportUpload",
+  name: 'reportUpload',
   components: {
     ColumnOption,
-    ActionBar
+    ActionBar,
   },
   data() {
     return {
@@ -72,10 +72,10 @@ export default Vue.extend({
       fileResults: {},
       actions: [
         {
-          type: "back",
-          align: "left"
-        }
-      ]
+          type: 'back',
+          align: 'left',
+        },
+      ],
     };
   },
   methods: {
@@ -83,10 +83,10 @@ export default Vue.extend({
       const file = event.target.files[0];
 
       papa.parse(file, {
-        delimiter: ",",
+        delimiter: ',',
         header: true,
         dynamicTyping: true,
-        complete: results => {
+        complete: (results) => {
           if (results.errors.length > 0) {
             // TODO: Implement error logging and display to user
             return;
@@ -99,26 +99,26 @@ export default Vue.extend({
 
           // Set results to be accessible in other methods
           this.fileResults = results;
-        }
+        },
       });
     },
     processReportSettings(event) {
-      const elements = event.target.elements;
+      const { elements } = event.target;
       const fileData = this.fileResults.data;
 
       // Get the report title out of the elements
-      const reportTitle = elements.namedItem("reportTitle").value;
+      const reportTitle = elements.namedItem('reportTitle').value;
 
       // Get report settings
-      const canEdit = elements.namedItem("canEdit").checked;
-      const canDelete = elements.namedItem("canDelete").checked;
+      const canEdit = elements.namedItem('canEdit').checked;
+      const canDelete = elements.namedItem('canDelete').checked;
 
       if (!reportTitle) {
         return;
       }
 
       Promise.all([...elements].map(this.processColumnSetting))
-        .then(columnSettings => {
+        .then((columnSettings) => {
           const promises = new Promise((resolve, reject) => {
             const columns = [];
             const count = columnSettings.length;
@@ -138,42 +138,38 @@ export default Vue.extend({
 
           const finalColumns = [];
           promises
-            .then(columns => {
+            .then((columns) => {
+              console.log(columns);
               for (const key in columns) {
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
                 finalColumns.push(settings);
               }
-              return;
             })
             .then(() => {
               const reportInfo = {
                 name: reportTitle,
                 options: {
                   canEdit,
-                  canDelete
+                  canDelete,
                 },
                 records: fileData,
-                columns: finalColumns
+                columns: finalColumns,
               };
 
-              this.$store.dispatch("reports/create", reportInfo);
+              this.$store.dispatch('reports/create', reportInfo);
             });
         })
-        .catch(err => {
+        .catch((err) => {
           // TODO: Properly handle errors
           console.log(err);
         });
     },
     processColumnSetting(element) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         // Get the field/column name to group settings based on column
-        const field = element.getAttribute("data-field");
-
-        // Get type to convert values (Bools)
-        const type = element.getAttribute("data-type");
-        let value = element.value;
+        const field = element.getAttribute('data-field');
 
         // Skip any fields that don't have data-field
         if (!field) {
@@ -181,21 +177,38 @@ export default Vue.extend({
           return;
         }
 
+        // Get type to convert values (Bools)
+        const type = element.getAttribute('data-type');
+
+        let value;
+
+        switch (type) {
+          case 'bool':
+            value = element.checked;
+            break;
+          default:
+            ({ value } = element);
+            break;
+        }
+
         const settings = {
           field,
           type: element.name,
-          value
+          value,
         };
 
         resolve(settings);
       });
-    }
-  }
+    },
+  },
 });
 </script>
 
 <style lang="scss">
+@import "@/styles/_variables.scss";
+
 .header {
   text-align: center;
+  color: $primary-color;
 }
 </style>

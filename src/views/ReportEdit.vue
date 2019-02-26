@@ -4,6 +4,7 @@
     <div id="column-options-wrapper" class="card grid-cell span-12-xs">
       <div class="card-header">Report Settings</div>
       <div class="card-body">
+        <h3 class="header">General</h3>
         <form
           @submit.prevent="processReportSettings"
           id="column-options-form"
@@ -49,37 +50,37 @@
 </template>
 
 <script>
-import _ from "lodash";
-import Vue from "vue";
-import firebase from "firebase/app";
-import "firebase/firestore";
-import ColumnOption from "@/components/ColumnOption.vue";
-import ActionBar from "@/components/ActionBar.vue";
+import _ from 'lodash';
+import Vue from 'vue';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import ColumnOption from '@/components/ColumnOption.vue';
+import ActionBar from '@/components/ActionBar.vue';
 
 export default Vue.extend({
-  name: "reportEdit",
+  name: 'reportEdit',
   components: {
     ColumnOption,
-    ActionBar
+    ActionBar,
   },
   data() {
     return {
       actions: [
         {
-          type: "back",
-          align: "left"
-        }
-      ]
+          type: 'back',
+          align: 'left',
+        },
+      ],
     };
   },
   created() {
     this.$store.dispatch(
-      "reports/getReportSettings",
-      this.$route.params.reportId
+      'reports/getReportSettings',
+      this.$route.params.reportId,
     );
     this.$store.dispatch(
-      "reports/getReportColumns",
-      this.$route.params.reportId
+      'reports/getReportColumns',
+      this.$route.params.reportId,
     );
   },
   computed: {
@@ -88,23 +89,23 @@ export default Vue.extend({
     },
     settings() {
       return this.$store.state.reports.report.settings;
-    }
+    },
   },
   methods: {
     processReportSettings(event) {
-      const elements = event.target.elements;
+      const { elements } = event.target;
 
       // Get the report title out of the elements
-      const reportTitle = elements.namedItem("reportTitle").value;
-      const canEdit = elements.namedItem("canEdit").checked;
-      const canDelete = elements.namedItem("canDelete").checked;
+      const reportTitle = elements.namedItem('reportTitle').value;
+      const canEdit = elements.namedItem('canEdit').checked;
+      const canDelete = elements.namedItem('canDelete').checked;
 
       if (!reportTitle) {
         return;
       }
 
       Promise.all([...elements].map(this.processColumnSetting))
-        .then(columnSettings => {
+        .then((columnSettings) => {
           const promises = new Promise((resolve, reject) => {
             const columns = [];
 
@@ -123,7 +124,7 @@ export default Vue.extend({
           });
 
           promises
-            .then(cols => {
+            .then((cols) => {
               const columns = [];
               for (const key in cols) {
                 const settings = cols[key];
@@ -133,25 +134,25 @@ export default Vue.extend({
               }
               return columns;
             })
-            .then(columns => {
+            .then((columns) => {
               const reportInfo = {
                 name: reportTitle,
                 reportId: this.$route.params.reportId,
                 options: {
                   canEdit,
-                  canDelete
+                  canDelete,
                 },
-                columns
+                columns,
               };
 
               this.$store
-                .dispatch("reports/updateReport", reportInfo)
+                .dispatch('reports/updateReport', reportInfo)
                 .then(() => {
                   this.$router.go(-1);
                 });
             });
         })
-        .catch(err => {
+        .catch((err) => {
           // TODO: Properly handle errors
           console.log(err);
         });
@@ -159,7 +160,7 @@ export default Vue.extend({
     processColumnSetting(element) {
       return new Promise((resolve, reject) => {
         // Get the field/column name to group settings based on column
-        const field = element.getAttribute("data-field");
+        const field = element.getAttribute('data-field');
 
         // Skip any fields that don't have data-field
         if (!field) {
@@ -168,13 +169,13 @@ export default Vue.extend({
         }
 
         // Get type to convert values (Bools)
-        const type = element.getAttribute("data-type");
-        const dbKey = element.getAttribute("data-db-key");
+        const type = element.getAttribute('data-type');
+        const dbKey = element.getAttribute('data-db-key');
 
         let value;
 
         switch (type) {
-          case "bool":
+          case 'bool':
             value = element.checked;
             break;
           default:
@@ -186,12 +187,21 @@ export default Vue.extend({
           dbKey,
           field,
           type: element.name,
-          value
+          value,
         };
 
         resolve(settings);
       });
-    }
-  }
+    },
+  },
 });
 </script>
+
+<style lang="scss">
+@import "@/styles/_variables.scss";
+
+.header {
+  text-align: center;
+  color: $primary-color;
+}
+</style>

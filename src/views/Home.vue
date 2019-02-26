@@ -1,24 +1,17 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <Home msg="Welcome to Jacob Swansons BriteCore Data Table!"/>
   </div>
 </template>
 
 <script>
-import Vue from "vue";
-import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
+import Vue from 'vue';
+import Home from '@/components/Home.vue'; // @ is an alias to /src
 
 export default Vue.extend({
-  name: "home",
+  name: 'home',
   components: {
-    HelloWorld
-  }
+    Home,
+  },
 });
 </script>
-
-<style lang="scss">
-.home {
-  text-align: center;
-}
-</style>

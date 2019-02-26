@@ -29,32 +29,32 @@
 </template>
 
 <script>
-import Vue from "vue";
-import ActionBar from "@/components/ActionBar.vue";
+import Vue from 'vue';
+import ActionBar from '@/components/ActionBar.vue';
 
 export default Vue.extend({
-  name: "recordEdit",
+  name: 'recordEdit',
   components: {
-    ActionBar
+    ActionBar,
   },
   data() {
     return {
       actions: [
         {
-          type: "back",
-          align: "left"
-        }
-      ]
+          type: 'back',
+          align: 'left',
+        },
+      ],
     };
   },
   created() {
     this.$store.dispatch(
-      "reports/getReportColumns",
-      this.$route.params.reportId
+      'reports/getReportColumns',
+      this.$route.params.reportId,
     );
-    this.$store.dispatch("record/getRecord", {
+    this.$store.dispatch('record/getRecord', {
       reportId: this.$route.params.reportId,
-      recordId: this.$route.params.recordId
+      recordId: this.$route.params.recordId,
     });
   },
   computed: {
@@ -63,18 +63,18 @@ export default Vue.extend({
     },
     record() {
       return this.$store.state.record.record;
-    }
+    },
   },
   methods: {
     save() {
       this.$store
-        .dispatch("record/update", {
+        .dispatch('record/update', {
           reportId: this.$route.params.reportId,
           recordId: this.$route.params.recordId,
-          record: this.record
+          record: this.record,
         })
         .then(this.$router.go(-1));
-    }
-  }
+    },
+  },
 });
 </script>
