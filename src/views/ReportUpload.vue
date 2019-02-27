@@ -5,18 +5,25 @@
       <div class="card-header">Instructions:</div>
       <div class="card-body">
         <p>
-          Click the button below to upload a CSV file. The file must contain headers in the
-          first row in order to function properly.
+          Click the button below to upload a CSV file. The file must contain
+          headers in the first row in order to function properly.
         </p>
       </div>
       <div class="card-footer">
         <div class="file-input">
-          <input type="file" title="Upload Report (CSV)" @change="checkFile($event)">
+          <input
+            type="file"
+            title="Upload Report (CSV)"
+            @change="checkFile($event)"
+          />
         </div>
       </div>
     </div>
 
-    <div id="column-options-wrapper" class="card grid-cell span-12-xs span-6-md">
+    <div
+      id="column-options-wrapper"
+      class="card grid-cell span-12-xs span-6-md"
+    >
       <div class="card-header">Report Settings</div>
       <div class="card-body">
         <form
@@ -27,15 +34,31 @@
           <h3 class="header">General</h3>
           <div class="text-input">
             <label for="reportTitle">Report Title *</label>
-            <input type="text" name="reportTitle" id="reportTitle" placeholder="Title">
+            <input
+              type="text"
+              name="reportTitle"
+              id="reportTitle"
+              placeholder="Title"
+            />
           </div>
           <div class="checkbox-input">
             <label for="canEdit">Data Editable?</label>
-            <input type="checkbox" name="canEdit" id="canEdit" data-type="bool" checked>
+            <input
+              type="checkbox"
+              name="canEdit"
+              id="canEdit"
+              data-type="bool"
+              checked
+            />
           </div>
           <div class="checkbox-input">
             <label for="canDelete">Data Deletable?</label>
-            <input type="checkbox" name="canDelete" id="canDelete" data-type="bool">
+            <input
+              type="checkbox"
+              name="canDelete"
+              id="canDelete"
+              data-type="bool"
+            />
           </div>
           <ColumnOption
             v-for="(column, index) in columns"
@@ -157,7 +180,14 @@ export default Vue.extend({
                 columns: finalColumns,
               };
 
-              this.$store.dispatch('reports/createReport', reportInfo);
+              this.$store
+                .dispatch('reports/createReport', reportInfo)
+                .then((response) => {
+                  console.log(response);
+                  if (response === 'success') {
+                    this.$router.go(-1);
+                  }
+                });
             });
         })
         .catch((err) => {
@@ -189,7 +219,6 @@ export default Vue.extend({
             ({ value } = element);
             break;
         }
-        console.log(field, value);
 
         const settings = {
           field,
@@ -205,7 +234,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import "@/styles/_variables.scss";
+@import '@/styles/_variables.scss';
 
 .header {
   text-align: center;

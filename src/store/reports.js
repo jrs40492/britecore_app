@@ -134,7 +134,7 @@ const actions = {
         }));
       });
   },
-  async createReport({
+  createReport({
     commit,
     rootState,
   }, {
@@ -143,18 +143,23 @@ const actions = {
     columns,
     records,
   }) {
-    rootState.db.collection('reports').add({
-      name,
-      createdOn: firebase.firestore.Timestamp.now(),
-      options,
-    }).then((docRef) => {
-      const columnsRef = docRef.collection('columns');
-      const recordsRef = docRef.collection('records');
-      columns.forEach((column) => {
-        columnsRef.doc().set(column);
-      });
-      records.forEach((record) => {
-        recordsRef.doc().set(record);
+    return new Promise((resolve, reject) => {
+      rootState.db.collection('reports').add({
+        name,
+        createdOn: firebase.firestore.Timestamp.now(),
+        options,
+      }).then((docRef) => {
+        const columnsRef = docRef.collection('columns');
+        columns.forEach((column) => {
+          columnsRef.doc().set(column);
+        });
+
+        const recordsRef = docRef.collection('records');
+        records.forEach((record) => {
+          recordsRef.doc().set(record);
+        });
+
+        resolve('success');
       });
     });
   },

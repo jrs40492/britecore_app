@@ -15,7 +15,7 @@
                 @input="
                   applyFilter('number', $event.target.value, column.id, 'min')
                 "
-              >
+              />
             </div>
             <div class="number-input">
               <label :for="column.id + 'Max'">Max {{ column.name }}:</label>
@@ -27,12 +27,14 @@
                 @input="
                   applyFilter('number', $event.target.value, column.id, 'max')
                 "
-              >
+              />
             </div>
           </div>
           <div v-else-if="column.type === 'date'">
             <div class="date-input">
-              <label :for="column.id + 'StartDate'">Start {{ column.name }}:</label>
+              <label :for="column.id + 'StartDate'"
+                >Start {{ column.name }}:</label
+              >
               <input
                 type="date"
                 :id="column.id + 'StartDate'"
@@ -41,7 +43,7 @@
                   applyFilter('date', $event.target.value, column.id, 'start')
                 "
                 :v-model="column.id"
-              >
+              />
             </div>
             <div class="date-input">
               <label :for="column.id + 'EndDate'">End {{ column.name }}:</label>
@@ -53,7 +55,7 @@
                   applyFilter('date', $event.target.value, column.id, 'end')
                 "
                 :v-model="column.id"
-              >
+              />
             </div>
           </div>
           <div v-else>
@@ -65,7 +67,7 @@
                 :placeholder="column.name"
                 @input="applyFilter('text', $event.target.value, column.id)"
                 :v-model="column.id"
-              >
+              />
             </div>
           </div>
         </div>
@@ -84,7 +86,9 @@
             >
               {{ column.name }}
               <template v-if="currentSort === column.name">
-                <i class="material-icons" v-if="column.sortDirection === 'asc'">arrow_drop_up</i>
+                <i class="material-icons" v-if="column.sortDirection === 'asc'"
+                  >arrow_drop_up</i
+                >
                 <i class="material-icons" v-else>arrow_drop_down</i>
               </template>
             </th>
@@ -95,12 +99,12 @@
         <tbody v-if="displayRecords.length > 0">
           <tr v-for="(record, index) in displayRecords" :key="index">
             <template v-for="column in displayColumns">
-              <td v-if="column.type === 'date'" :key="column.id">{{ formatDate(record[column.id]) }}</td>
+              <td v-if="column.type === 'date'" :key="column.id">
+                {{ formatDate(record[column.id]) }}
+              </td>
               <td v-else-if="column.type === 'link'" :key="column.id">
                 <router-link :to="record.uniqueId" append>
-                  {{
-                  record[column.id]
-                  }}
+                  {{ record[column.id] }}
                 </router-link>
               </td>
               <td
@@ -108,7 +112,9 @@
                 :class="record[column.id] < 0 ? 'negative' : ''"
                 class="number"
                 :key="column.id"
-              >{{ formatCurrency(record[column.id]) }}</td>
+              >
+                {{ formatCurrency(record[column.id]) }}
+              </td>
               <td v-else :key="column.id">{{ record[column.id] }}</td>
             </template>
             <td v-if="settings.options.canEdit" class="icon-cell">
@@ -128,21 +134,30 @@
         </tbody>
       </table>
       <div class="pagination" v-if="pagination.totalPages > 1">
-        <div :class="pagination.currentPage === 1 ? 'active' : ''" @click="updatePagination(1)">1</div>
+        <div
+          :class="pagination.currentPage === 1 ? 'active' : ''"
+          @click="updatePagination(1)"
+        >
+          1
+        </div>
         <div v-if="pagination.startEllipsis" class="ellipsis start">...</div>
         <div
           v-for="page in pagination.range"
           :key="page"
           :class="pagination.currentPage === page ? 'active' : ''"
           @click="updatePagination(page)"
-        >{{ page }}</div>
+        >
+          {{ page }}
+        </div>
         <div v-if="pagination.endEllipsis" class="ellipsis end">...</div>
         <div
           :class="
             pagination.currentPage === pagination.totalPages ? 'active' : ''
           "
           @click="updatePagination(pagination.totalPages)"
-        >{{ pagination.totalPages }}</div>
+        >
+          {{ pagination.totalPages }}
+        </div>
       </div>
     </div>
   </div>
@@ -158,6 +173,7 @@ export default Vue.extend({
   data() {
     return {
       activeFilters: {},
+      filteredRecords: [],
       currentSort: '',
       pagination: {
         limit: 10,
@@ -165,16 +181,13 @@ export default Vue.extend({
         totalPages: 0,
         startEllipsis: false,
         endEllipsis: false,
-        range: _.range(1, 1),
-      },
+        range: _.range(1, 1)
+      }
     };
   },
   computed: {
     allRecords() {
-      return this.records;
-    },
-    filteredRecords() {
-      return this.allRecords;
+      return (this.filteredRecords = this.records);
     },
     displayColumns() {
       return _.filter(this.columns, 'visible');
@@ -183,7 +196,7 @@ export default Vue.extend({
       this.allRecords;
 
       return this.updatePagination();
-    },
+    }
   },
   methods: {
     updatePagination(page) {
@@ -196,7 +209,7 @@ export default Vue.extend({
 
       this.pagination.limit = 10;
       this.pagination.totalPages = Math.ceil(
-        this.filteredRecords.length / this.pagination.limit,
+        this.filteredRecords.length / this.pagination.limit
       );
 
       let start = 2;
@@ -238,7 +251,7 @@ export default Vue.extend({
           type,
           value,
           columnId: id,
-          version,
+          version
         };
       }
 
@@ -254,7 +267,7 @@ export default Vue.extend({
       }
 
       // Loop through all active filters to get data set
-      filterKeys.forEach((key) => {
+      filterKeys.forEach(key => {
         const filter = this.activeFilters[key];
         switch (filter.type) {
           case 'date':
@@ -273,7 +286,7 @@ export default Vue.extend({
     },
     dateFilter(value, columnId, type) {
       const filterDate = new Date(value).setHours(0, 0, 0, 0);
-      this.filteredRecords = this.filteredRecords.filter((x) => {
+      this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === 'start') {
           return new Date(x[columnId]).setHours(0, 0, 0, 0) >= filterDate;
         }
@@ -282,13 +295,15 @@ export default Vue.extend({
       // this.updatePagination(1);
     },
     textFilter(value, columnId) {
-      this.filteredRecords = this.filteredRecords.filter(x => new RegExp(value, 'i').test(x[columnId]));
+      this.filteredRecords = this.filteredRecords.filter(x =>
+        new RegExp(value, 'i').test(x[columnId])
+      );
       // this.updatePagination(1);
     },
     numberFilter(value, columnId, type) {
       const numValue = parseFloat(value);
 
-      this.filteredRecords = this.filteredRecords.filter((x) => {
+      this.filteredRecords = this.filteredRecords.filter(x => {
         if (type === 'min') {
           return x[columnId] >= numValue;
         }
@@ -302,18 +317,19 @@ export default Vue.extend({
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
         e => e[column.id],
-        column.sortDirection,
+        column.sortDirection
       );
       this.getData();
     },
     getData() {
       const start = (this.pagination.currentPage - 1) * this.pagination.limit;
-      const end = (this.pagination.currentPage - 1) * this.pagination.limit
-        + this.pagination.limit;
+      const end =
+        (this.pagination.currentPage - 1) * this.pagination.limit +
+        this.pagination.limit;
 
       return this.filteredRecords.slice(start, end || -1);
-    },
-  },
+    }
+  }
 });
 </script>
 

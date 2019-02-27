@@ -6,9 +6,10 @@ import mixins from './mixins';
 
 Vue.config.productionTip = false;
 
+Vue.mixin(mixins);
+
 new Vue({
   store,
   router,
-  mixins,
   render: h => h(App),
 }).$mount('#app');
