@@ -9,10 +9,15 @@
           id="column-options-form"
           v-if="columns.length > 0"
         >
-        <h3 class="header">General</h3>
+          <h3 class="header">General</h3>
           <div class="text-input">
             <label for="reportTitle">Report Title</label>
-            <input type="text" name="reportTitle" id="reportTitle" :value="settings.name">
+            <input
+              type="text"
+              name="reportTitle"
+              id="reportTitle"
+              :value="settings.name"
+            />
           </div>
           <div class="checkbox-input">
             <label for="canEdit">Data Editable?</label>
@@ -22,7 +27,7 @@
               id="canEdit"
               data-type="bool"
               :checked="settings.options.canEdit"
-            >
+            />
           </div>
           <div class="checkbox-input">
             <label for="canDelete">Data Deletable?</label>
@@ -32,7 +37,7 @@
               id="canDelete"
               data-type="bool"
               :checked="settings.options.canDelete"
-            >
+            />
           </div>
           <ColumnOption
             v-for="(column, index) in columns"
@@ -58,26 +63,26 @@ export default Vue.extend({
   name: 'reportEdit',
   components: {
     ColumnOption,
-    ActionBar,
+    ActionBar
   },
   data() {
     return {
       actions: [
         {
           type: 'back',
-          align: 'left',
-        },
-      ],
+          align: 'left'
+        }
+      ]
     };
   },
   created() {
     this.$store.dispatch(
       'reports/getReportSettings',
-      this.$route.params.reportId,
+      this.$route.params.reportId
     );
     this.$store.dispatch(
       'reports/getReportColumns',
-      this.$route.params.reportId,
+      this.$route.params.reportId
     );
   },
   computed: {
@@ -86,7 +91,7 @@ export default Vue.extend({
     },
     settings() {
       return this.$store.state.reports.report.settings;
-    },
+    }
   },
   methods: {
     processReportSettings(event) {
@@ -102,12 +107,16 @@ export default Vue.extend({
       }
 
       Promise.all([...elements].map(this.processColumnSetting))
-        .then((columnSettings) => {
-          const promises = new Promise((resolve) => {
+        .then(columnSettings => {
+          const promises = new Promise(resolve => {
             const columns = [];
 
-            columnSettings.forEach((setting) => {
+            // Combines all fields with same column parent together
+            columnSettings.forEach(setting => {
+              // Skip setting if it's undefined (data-type was missing from field)
+              // Can't return here as last field may be undefined
               if (setting) {
+                // If first time seeing setting.field, set new object in columns array
                 if (!columns[setting.field]) {
                   columns[setting.field] = {};
                 }
@@ -121,10 +130,12 @@ export default Vue.extend({
           });
 
           promises
-            .then((cols) => {
+            .then(cols => {
               const columns = [];
               const keys = Object.keys(cols);
-              keys.forEach((key) => {
+
+              // Set extra data on each column and add to final array
+              keys.forEach(key => {
                 const settings = cols[key];
                 settings.id = key;
                 settings.name = key;
@@ -132,15 +143,15 @@ export default Vue.extend({
               });
               return columns;
             })
-            .then((columns) => {
+            .then(columns => {
               const reportInfo = {
                 name: reportTitle,
                 reportId: this.$route.params.reportId,
                 options: {
                   canEdit,
-                  canDelete,
+                  canDelete
                 },
-                columns,
+                columns
               };
 
               this.$store
@@ -150,13 +161,13 @@ export default Vue.extend({
                 });
             });
         })
-        .catch((err) => {
+        .catch(err => {
           // TODO: Properly handle errors
           console.log(err);
         });
     },
     processColumnSetting(element) {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         // Get the field/column name to group settings based on column
         const field = element.getAttribute('data-field');
 
@@ -185,18 +196,18 @@ export default Vue.extend({
           dbKey,
           field,
           type: element.name,
-          value,
+          value
         };
 
         resolve(settings);
       });
-    },
-  },
+    }
+  }
 });
 </script>
 
 <style lang="scss">
-@import "@/styles/_variables.scss";
+@import '@/styles/_variables.scss';
 
 .header {
   text-align: center;

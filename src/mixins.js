@@ -22,7 +22,13 @@ export default {
         format = 'YYYY-MM-DDTHH:mm:ss';
       }
 
-      return moment(date).format(format);
+      let newDate = moment(newDate);
+
+      if (typeof date !== 'string') {
+        newDate = moment.unix(date.seconds);
+      }
+
+      return newDate.format(format);
     }
   }
 }

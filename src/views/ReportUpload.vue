@@ -26,6 +26,12 @@
     >
       <div class="card-header">Report Settings</div>
       <div class="card-body">
+        <div v-if="errors.length">
+          <h3>Please fix the following errors:</h3>
+          <ul>
+            <li v-for="error in errors" :key="error">{{ error }}</li>
+          </ul>
+        </div>
         <form
           @submit.prevent="processReportSettings"
           id="column-options-form"
@@ -84,29 +90,32 @@ export default Vue.extend({
   name: 'reportUpload',
   components: {
     ColumnOption,
-    ActionBar,
+    ActionBar
   },
   data() {
     return {
       columns: [],
       fileResults: {},
+      errors: [],
       actions: [
         {
           type: 'back',
-          align: 'left',
-        },
-      ],
+          align: 'left'
+        }
+      ]
     };
   },
   methods: {
     checkFile(event) {
+      // Get file from input
       const file = event.target.files[0];
 
       papa.parse(file, {
         delimiter: ',',
         header: true,
+        // Will convert strings to dates and numbers
         dynamicTyping: true,
-        complete: (results) => {
+        complete: results => {
           if (results.errors.length > 0) {
             // TODO: Implement error logging and display to user
             return;
@@ -119,10 +128,13 @@ export default Vue.extend({
 
           // Set results to be accessible in other methods
           this.fileResults = results;
-        },
+        }
       });
     },
     processReportSettings(event) {
+      // Reset errors
+      this.errors = [];
+
       const { elements } = event.target;
       const fileData = this.fileResults.data;
 
@@ -134,17 +146,22 @@ export default Vue.extend({
       const canDelete = elements.namedItem('canDelete').checked;
 
       if (!reportTitle) {
+        this.errors.push('Report Title is required!');
         return;
       }
 
       Promise.all([...elements].map(this.processColumnSetting))
-        .then((columnSettings) => {
-          const promises = new Promise((resolve) => {
+        .then(columnSettings => {
+          const promises = new Promise(resolve => {
             const columns = [];
             const count = columnSettings.length;
 
+            // Combines all fields with same column parent together
             columnSettings.forEach((setting, index) => {
+              // Skip setting if it's undefined (data-type was missing from field)
+              // Can't return here as last field may be undefined
               if (setting) {
+                // If first time seeing setting.field, set new object in columns array
                 if (!columns[setting.field]) {
                   columns[setting.field] = {};
                 }
@@ -157,10 +174,12 @@ export default Vue.extend({
           });
 
           promises
-            .then((columns) => {
+            .then(columns => {
               const finalColumns = [];
               const keys = Object.keys(columns);
-              keys.forEach((key) => {
+
+              // Set extra data on each column and add to final array
+              keys.forEach(key => {
                 const settings = columns[key];
                 settings.id = key;
                 settings.name = key;
@@ -169,20 +188,20 @@ export default Vue.extend({
 
               return finalColumns;
             })
-            .then((finalColumns) => {
+            .then(finalColumns => {
               const reportInfo = {
                 name: reportTitle,
                 options: {
                   canEdit,
-                  canDelete,
+                  canDelete
                 },
                 records: fileData,
-                columns: finalColumns,
+                columns: finalColumns
               };
 
               this.$store
                 .dispatch('reports/createReport', reportInfo)
-                .then((response) => {
+                .then(response => {
                   console.log(response);
                   if (response === 'success') {
                     this.$router.go(-1);
@@ -190,14 +209,14 @@ export default Vue.extend({
                 });
             });
         })
-        .catch((err) => {
+        .catch(err => {
           // TODO: Properly handle errors
           console.log(err);
         });
     },
     processColumnSetting(element) {
-      return new Promise((resolve) => {
-        // Get the field/column name to group settings based on column
+      return new Promise(resolve => {
+        // Get the column name to group settings based on column
         const field = element.getAttribute('data-field');
 
         // Skip any fields that don't have data-field
@@ -223,13 +242,13 @@ export default Vue.extend({
         const settings = {
           field,
           type: element.name,
-          value,
+          value
         };
 
         resolve(settings);
       });
-    },
-  },
+    }
+  }
 });
 </script>
 

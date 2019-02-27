@@ -26,8 +26,8 @@ const mutations = {
     },
   ) {
     if (!lodash.find(data.records, {
-      uniqueId: record.id,
-    })) {
+        uniqueId: record.id,
+      })) {
       data.records.push({
         uniqueId: record.id,
         ...record.data(),
@@ -50,8 +50,8 @@ const mutations = {
     },
   ) {
     if (!lodash.find(data.columns, {
-      uniqueId: column.id,
-    })) {
+        uniqueId: column.id,
+      })) {
       data.report.columns.push({
         uniqueId: column.id,
         ...column.data(),
@@ -64,8 +64,8 @@ const mutations = {
     },
   ) {
     if (!lodash.find(data.records, {
-      uniqueId: record.id,
-    })) {
+        uniqueId: record.id,
+      })) {
       data.report.records.push({
         uniqueId: record.id,
         ...record.data(),

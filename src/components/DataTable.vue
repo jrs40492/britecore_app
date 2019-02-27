@@ -187,12 +187,14 @@ export default Vue.extend({
   },
   computed: {
     allRecords() {
+      // TODO: Must be a better way to watch these fields
       return (this.filteredRecords = this.records);
     },
     displayColumns() {
       return _.filter(this.columns, 'visible');
     },
     displayRecords() {
+      // TODO: Must be a better way to watch these fields
       this.allRecords;
 
       return this.updatePagination();
@@ -228,6 +230,7 @@ export default Vue.extend({
         this.pagination.endEllipsis = true;
       }
 
+      // Build the range for the middle paging numbers
       this.pagination.range = _.range(start, end);
 
       return this.getData();
@@ -260,9 +263,8 @@ export default Vue.extend({
 
       const filterKeys = Object.keys(this.activeFilters);
 
-      // If all filters have been removed, reset page to 1
+      // If all filters have been removed
       if (filterKeys.length === 0) {
-        // this.updatePagination(1);
         return;
       }
 
@@ -292,13 +294,11 @@ export default Vue.extend({
         }
         return new Date(x[columnId]).setHours(0, 0, 0, 0) <= filterDate;
       });
-      // this.updatePagination(1);
     },
     textFilter(value, columnId) {
       this.filteredRecords = this.filteredRecords.filter(x =>
         new RegExp(value, 'i').test(x[columnId])
       );
-      // this.updatePagination(1);
     },
     numberFilter(value, columnId, type) {
       const numValue = parseFloat(value);
@@ -309,17 +309,16 @@ export default Vue.extend({
         }
         return x[columnId] <= numValue;
       });
-      // this.updatePagination(1);
     },
     sort(column) {
       column.sortDirection = column.sortDirection === 'asc' ? 'desc' : 'asc';
       this.currentSort = column.id;
+
       this.filteredRecords = _.orderBy(
         this.filteredRecords,
         e => e[column.id],
         column.sortDirection
       );
-      this.getData();
     },
     getData() {
       const start = (this.pagination.currentPage - 1) * this.pagination.limit;
