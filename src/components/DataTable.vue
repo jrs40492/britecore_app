@@ -115,6 +115,14 @@
               >
                 {{ formatCurrency(record[column.id]) }}
               </td>
+              <td
+                v-else-if="column.type === 'number'"
+                :class="record[column.id] < 0 ? 'negative' : ''"
+                class="number"
+                :key="column.id"
+              >
+                {{ record[column.id] }}
+              </td>
               <td v-else :key="column.id">{{ record[column.id] }}</td>
             </template>
             <td v-if="settings.options.canEdit" class="icon-cell">
