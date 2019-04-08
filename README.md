@@ -8,7 +8,7 @@
 
 ### In what ways would you adapt your component so that it could be used in many different scenarios where a data table is required?
 
-- The DataTable component I built can handle any CSV file as long as the headers in the first row. It will dynamically pull the headers out and allow you to set the name, visibility, order, data type, and filtering of each column individually.
+- The DataTable component I built can handle any CSV file as long as there are headers in the first row. It will dynamically pull the headers out and allow you to set the name, visibility, order, data type, and filtering of each column individually.
 - Given more time, I'd like to expand on the data types and column options like allowing specific column widths and add e-mail, number, and address types.
 
 ### What is your favorite CSS property? Why?
@@ -17,18 +17,19 @@
 
 ### What is your favorite modern Javascript feature? Why?
 
-- My favorite Javascript feature is the .forEach loop. It allows me to easily loop through collections by name versus the older way of by index. This makes reading through code a lot easier in my opinion.
+- My favorite Javascript feature is the forEach loop. It allows me to easily loop through collections by name versus the older way of by index. This makes reading through code a lot easier in my opinion.
 
 ### What is your favorite third-party Vue.js library? Why?
 
-- I don't have a favorite Vue.js library at this point because this was my first time using Vue. I think Vuetify would have made this task a lot simpler if I decided to use it.
+- I don't have a favorite Vue.js library at this point because this was my first time using Vue. I think Vuetify would have made this task a lot simpler if I had decided to use it.
 
 ## Project setup
 
 ```
-1. Rename .env.example to .env.dev
+1. Rename/copy .env.example to .env.dev
 2. Plug in firestore config values
 3. npm install
+4. npm run serve
 ```
 
 ### Compiles and hot-reloads for development
@@ -55,6 +56,11 @@ npm run lint
 npm run test:unit
 ```
 
-### Customize configuration
+### Deploy to firebase
 
-See [Configuration Reference](https://cli.vuejs.org/config/).
+```
+1. Create .env.prod
+2. Populate with all required environment variables
+3. Connect your app to firebase using the steps here: https://firebase.google.com/docs/hosting/
+4. Deploy using "firebase deploy"
+```
