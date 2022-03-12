@@ -11,7 +11,7 @@
   "dependencies": {
     "fernet": "^0.3.1",
     "firebase": "^5.8.3",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "papaparse": "^5.2.0",
     "vue": "^2.5.22",
